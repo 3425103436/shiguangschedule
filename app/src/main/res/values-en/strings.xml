@@ -45,6 +45,8 @@
     <string name="label_end_section">End period</string>
     <string name="toast_time_invalid">Start period cannot be greater than end period</string>
     <string name="label_course_weeks">Course weeks</string>
+    <string name="label_week_type">Week type</string>
+    <string name="week_type_every_week">Every week</string>
     <string name="action_single_week">Odd weeks</string>
     <string name="action_double_week">Even weeks</string>
     <string name="label_course_color">Course color</string>

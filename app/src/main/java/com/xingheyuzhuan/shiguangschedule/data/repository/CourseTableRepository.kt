@@ -11,6 +11,7 @@ import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseWeekDao
 import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseWithWeeks
 import com.xingheyuzhuan.shiguangschedule.data.db.main.TimeSlot
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.util.UUID
@@ -313,8 +314,20 @@ class CourseTableRepository(
             return kotlinx.coroutines.flow.flowOf(emptyList())
         }
 
-        // 3. 调用 DAO 层的精准查询方法（按周次过滤）
+        val isOddWeek = weekNumber % 2 != 0
+
+        // 3. 调用 DAO 层的精准查询方法（按周次过滤），再追加单双周过滤
         return courseDao.getCoursesWithWeeksByTableAndWeek(courseTableId, weekNumber)
+            .map { courses ->
+                courses.filter { cw ->
+                    when (cw.course.weekType) {
+                        Course.WEEK_TYPE_ALL -> true
+                        Course.WEEK_TYPE_ODD -> isOddWeek
+                        Course.WEEK_TYPE_EVEN -> !isOddWeek
+                        else -> true
+                    }
+                }
+            }
     }
 }
 
