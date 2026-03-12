@@ -1,17 +1,17 @@
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -74,7 +74,6 @@ fun CourseBlock(
 
     // --- 字体大小计算逻辑 (新增) ---
     // 通过将基准字号乘以缩放因子，实现全局联动
-    val s13 = (13 * style.fontScale).sp
     val s12 = (12 * style.fontScale).sp
     val s10 = (10 * style.fontScale).sp
 
@@ -87,11 +86,19 @@ fun CourseBlock(
     }
     val isCustomTimeCourse = customTimeString != null
 
-    Box(
+    Surface(
         modifier = modifier
             .padding(style.courseBlockOuterPadding)
-            .clip(RoundedCornerShape(style.courseBlockCornerRadius))
-            .background(color = blockColor)
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(14.dp),
+                ambientColor = Color.Black.copy(alpha = 0.12f),
+                spotColor = Color.Black.copy(alpha = 0.08f)
+            )
+            .clip(RoundedCornerShape(14.dp)),
+        shape = RoundedCornerShape(14.dp),
+        color = blockColor,
+        tonalElevation = 1.dp
     ) {
         Column(
             modifier = Modifier
@@ -141,7 +148,7 @@ fun CourseBlock(
                 // --- 2. 课程名称 ---
                 Text(
                     text = firstCourse?.course?.name ?: "",
-                    fontSize = s13,
+                    fontSize = (14 * style.fontScale).sp,
                     fontWeight = FontWeight.Bold,
                     color = textColor,
                     overflow = TextOverflow.Ellipsis,
@@ -155,7 +162,7 @@ fun CourseBlock(
                     if (teacher.isNotBlank()) {
                         Text(
                             text = teacher,
-                            fontSize = s10,
+                            fontSize = s12,
                             color = textColor,
                             overflow = TextOverflow.Ellipsis,
                             style = TextStyle(lineHeight = 1.em)
