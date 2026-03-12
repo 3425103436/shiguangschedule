@@ -53,17 +53,14 @@ fun WeeklyScheduleScreen(
     viewModel: WeeklyScheduleViewModel = viewModel(factory = WeeklyScheduleViewModelFactory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val today = LocalDate.now()
+    val today = remember { LocalDate.now() }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-
     val snackbarMsg = stringResource(id = R.string.snackbar_add_course_after_start)
     val appContext = remember { context.applicationContext }
 
     LaunchedEffect(Unit) {
-        viewModel.setStringProvider { id, args ->
-            appContext.resources.getString(id, *args)
-        }
+        viewModel.setStringProvider { id, args -> appContext.resources.getString(id, *args) }
     }
 
     val pagerState = rememberPagerState(
@@ -88,14 +85,16 @@ fun WeeklyScheduleScreen(
     var showWeekSelector by remember { mutableStateOf(false) }
     var showConflictBottomSheet by remember { mutableStateOf(false) }
     var conflictCoursesToShow by remember { mutableStateOf(emptyList<CourseWithWeeks>()) }
-
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val composedStyle by remember(uiState.style) {
-        derivedStateOf { with(ScheduleGridStyleComposed) { uiState.style.toComposedStyle() } }
+    // 优化：直接使用 remember(key) 即可，不需要额外包裹 derivedStateOf
+    val composedStyle = remember(uiState.style) {
+        with(ScheduleGridStyleComposed) {
+            uiState.style.toComposedStyle()
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -148,7 +147,6 @@ fun WeeklyScheduleScreen(
                 // [预加载] 强制渲染相邻页面，确保滑动时目标页已就绪
                 beyondViewportPageCount = 1
             ) { pageIndex ->
-
                 // 去中心化：每一页根据索引独立计算自己的周一日期
                 val pageMondayDate = remember(pageIndex, uiState.firstDayOfWeek) {
                     val offsetWeeks = (pageIndex - INFINITE_PAGER_CENTER).toLong()
@@ -156,13 +154,15 @@ fun WeeklyScheduleScreen(
                     today.with(TemporalAdjusters.previousOrSame(firstDay)).plusWeeks(offsetWeeks)
                 }
 
+                // 缓存 DateTimeFormatter，避免每页重复创建
+                val dateFormatter = remember { DateTimeFormatter.ofPattern("MM-dd") }
+
                 // 独立日期列表：计算该页显示的日期文本
                 val pageDateStrings = remember(pageMondayDate) {
-                    val formatter = DateTimeFormatter.ofPattern("MM-dd")
-                    (0..6).map { pageMondayDate.plusDays(it.toLong()).format(formatter) }
+                    (0..6).map { pageMondayDate.plusDays(it.toLong()).format(dateFormatter) }
                 }
 
-                // 独立高亮：计算“今天”在该页的位置
+                // 独立高亮：计算"今天"在该页的位置
                 val pageTodayIndex = remember(pageMondayDate) {
                     val weekDates = (0..6).map { pageMondayDate.plusDays(it.toLong()) }
                     weekDates.indexOf(today)
@@ -175,7 +175,7 @@ fun WeeklyScheduleScreen(
                     style = composedStyle,
                     dates = pageDateStrings,
                     timeSlots = uiState.timeSlots,
-                    mergedCourses = pageCourses, // 绑定本页专属数据
+                    mergedCourses = pageCourses,
                     showWeekends = uiState.showWeekends,
                     todayIndex = pageTodayIndex,
                     firstDayOfWeek = uiState.firstDayOfWeek,
