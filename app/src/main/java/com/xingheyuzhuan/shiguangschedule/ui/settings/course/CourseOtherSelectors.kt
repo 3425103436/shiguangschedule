@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.xingheyuzhuan.shiguangschedule.R
+import com.xingheyuzhuan.shiguangschedule.data.db.main.Course
 import com.xingheyuzhuan.shiguangschedule.data.model.DualColor
 import kotlinx.coroutines.launch
 
@@ -212,6 +213,44 @@ fun ColorPicker(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WeekTypeSelector(
+    selectedWeekType: Int,
+    onWeekTypeSelected: (Int) -> Unit
+) {
+    val label = stringResource(R.string.label_week_type)
+    val everyWeek = stringResource(R.string.week_type_every_week)
+    val oddWeek = stringResource(R.string.action_single_week)
+    val evenWeek = stringResource(R.string.action_double_week)
+
+    val options = listOf(
+        CourseWeekTypeOption(Course.WEEK_TYPE_ALL, everyWeek),
+        CourseWeekTypeOption(Course.WEEK_TYPE_ODD, oddWeek),
+        CourseWeekTypeOption(Course.WEEK_TYPE_EVEN, evenWeek)
+    )
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = label, style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            options.forEachIndexed { index, option ->
+                SegmentedButton(
+                    selected = selectedWeekType == option.value,
+                    onClick = { onWeekTypeSelected(option.value) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                    label = { Text(option.label) }
+                )
+            }
+        }
+    }
+}
+
+private data class CourseWeekTypeOption(
+    val value: Int,
+    val label: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

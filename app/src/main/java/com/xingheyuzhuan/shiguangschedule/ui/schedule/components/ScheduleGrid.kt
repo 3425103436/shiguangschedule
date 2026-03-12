@@ -5,13 +5,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringArrayResource
@@ -59,7 +63,7 @@ fun ScheduleGrid(
         // 2. 计算尺寸
         val cellWidth = (screenWidth - style.timeColumnWidth) / displayDays.size
         val totalGridHeight = style.sectionHeight * timeSlots.size
-        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.08f)
 
         // 3. 转换绘图数据
         val schedulables = mergedCourses.mapNotNull { block ->
@@ -81,9 +85,7 @@ fun ScheduleGrid(
 
                 Box(Modifier.height(totalGridHeight).weight(1f)) {
                     // 控制主体网格线显示
-                    if (!style.hideGridLines) {
-                        GridLines(displayDays.size, timeSlots.size, cellWidth, totalGridHeight, style.sectionHeight, gridLineColor)
-                    }
+                    // WakeUp 风格：移除主网格硬线，仅保留课程卡片与顶部/时间轴轻层次
 
                     ClickableGrid(displayDays.size, timeSlots.size, cellWidth, style.sectionHeight) { dayIdx, sec ->
                         onGridCellClicked(mapDisplayIndexToDay(dayIdx, firstDayOfWeek), sec)
@@ -120,21 +122,19 @@ fun ScheduleGrid(
 
 @Composable
 private fun DayHeader(style: ScheduleGridStyleComposed, displayDays: List<String>, dates: List<String>, cellWidth: Dp, todayIndex: Int, lineColor: Color) {
-    Row(Modifier.fillMaxWidth().height(style.dayHeaderHeight).drawBehind {
-        // 表头底部横线
-        if (!style.hideGridLines) {
-            drawLine(lineColor, Offset(0f, size.height), Offset(size.width, size.height), 1f)
-        }
-    }) {
-        Spacer(Modifier.width(style.timeColumnWidth).fillMaxHeight().drawBehind {
-            // 时间轴右侧分割线
-            if (!style.hideGridLines) {
-                drawLine(lineColor, Offset(size.width, 0f), Offset(size.width, size.height), 1f)
-            }
-        })
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(style.dayHeaderHeight)
+            .padding(horizontal = 8.dp)
+            .shadow(4.dp, RoundedCornerShape(14.dp), ambientColor = Color.Black.copy(alpha = 0.08f))
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+    ) {
+        Spacer(Modifier.width(style.timeColumnWidth).fillMaxHeight())
         displayDays.forEachIndexed { index, day ->
             Box(Modifier.width(cellWidth).fillMaxHeight()
-                .background(if (index == todayIndex) MaterialTheme.colorScheme.primaryContainer.copy(0.4f) else Color.Transparent)
+                .background(if (index == todayIndex) MaterialTheme.colorScheme.primaryContainer.copy(0.48f) else Color.Transparent)
                 .drawBehind {
                     if (!style.hideGridLines) {
                         drawLine(lineColor, Offset(size.width, 0f), Offset(size.width, size.height), 1f)
@@ -163,11 +163,16 @@ private fun DayHeader(style: ScheduleGridStyleComposed, displayDays: List<String
 
 @Composable
 private fun TimeColumn(style: ScheduleGridStyleComposed, timeSlots: List<TimeSlot>, onTimeSlotClicked: () -> Unit, modifier: Modifier, lineColor: Color) {
-    Column(modifier.width(style.timeColumnWidth).drawBehind {
-        if (!style.hideGridLines) {
-            drawLine(lineColor, Offset(size.width, 0f), Offset(size.width, size.height), 1f)
-        }
-    }) {
+    Surface(
+        modifier = modifier
+            .width(style.timeColumnWidth)
+            .padding(start = 6.dp, end = 6.dp, top = 8.dp)
+            .shadow(3.dp, RoundedCornerShape(12.dp), ambientColor = Color.Black.copy(alpha = 0.06f))
+            .clip(RoundedCornerShape(12.dp)),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.86f),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column {
         timeSlots.forEach { slot ->
             Column(Modifier.fillMaxWidth().height(style.sectionHeight).clickable { onTimeSlotClicked() }.drawBehind {
                 if (!style.hideGridLines) {
@@ -193,6 +198,7 @@ private fun TimeColumn(style: ScheduleGridStyleComposed, timeSlots: List<TimeSlo
                     )
                 }
             }
+        }
         }
     }
 }

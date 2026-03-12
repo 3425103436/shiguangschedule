@@ -14,29 +14,43 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
-    background = Color(0xFF1C1B1F),
-    surface = Color(0xFF1C1B1F),
-    onBackground = Color.White,
-    onSurface = Color.White
+    primary = WakeupBlue,
+    onPrimary = Color.White,
+    primaryContainer = WakeupBlueContainer.copy(alpha = 0.28f),
+    secondary = WakeupPink,
+    secondaryContainer = WakeupPinkContainer.copy(alpha = 0.22f),
+    tertiary = WakeupGreen,
+    tertiaryContainer = WakeupGreenContainer.copy(alpha = 0.2f),
+    background = WakeupBackgroundDark,
+    surface = WakeupSurfaceDark,
+    onBackground = WakeupOnSurfaceDark,
+    onSurface = WakeupOnSurfaceDark,
+    onSurfaceVariant = WakeupOnSurfaceVariantDark,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = WakeupBlue,
+    onPrimary = Color.White,
+    primaryContainer = WakeupBlueContainer,
+    secondary = WakeupPink,
+    secondaryContainer = WakeupPinkContainer,
+    tertiary = WakeupGreen,
+    tertiaryContainer = WakeupGreenContainer,
+    background = WakeupBackgroundLight,
+    surface = WakeupSurfaceLight,
+    onBackground = WakeupOnSurfaceLight,
+    onSurface = WakeupOnSurfaceLight,
+    onSurfaceVariant = WakeupOnSurfaceVariantLight,
 )
 
 @Composable
 fun ShiguangScheduleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -60,6 +74,8 @@ fun ShiguangScheduleTheme(
             window.statusBarColor = Color.Transparent.toArgb()
             @Suppress("DEPRECATION")
             window.navigationBarColor = Color.Transparent.toArgb()
+
+            WindowCompat.setDecorFitsSystemWindows(window, false)
             val insetsController = WindowCompat.getInsetsController(window, view)
             insetsController.isAppearanceLightStatusBars = !darkTheme
             insetsController.isAppearanceLightNavigationBars = !darkTheme
