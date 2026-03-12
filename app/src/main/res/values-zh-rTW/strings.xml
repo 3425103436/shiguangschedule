@@ -45,6 +45,8 @@
     <string name="label_end_section">結束節次</string>
     <string name="toast_time_invalid">開始節次不能大於結束節次</string>
     <string name="label_course_weeks">上課週次</string>
+    <string name="label_week_type">單雙週</string>
+    <string name="week_type_every_week">每週</string>
     <string name="action_single_week">單週</string>
     <string name="action_double_week">雙週</string>
     <string name="label_course_color">課程顏色</string>

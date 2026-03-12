@@ -168,6 +168,11 @@ fun AddEditCourseScreen(
                 onWeekClick = { showWeekSelectorDialog = true }
             )
 
+            WeekTypeSelector(
+                selectedWeekType = uiState.weekType,
+                onWeekTypeSelected = viewModel::onWeekTypeChange
+            )
+
             ColorPicker(
                 selectedColor = uiState.courseColorMaps.getOrNull(uiState.colorIndex)?.let { dualColor ->
                     if (isDarkTheme) dualColor.dark else dualColor.light

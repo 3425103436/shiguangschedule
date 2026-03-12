@@ -76,7 +76,8 @@ class CourseConversionRepository(
                     isCustomTime = jsonCourse.isCustomTime,
                     customStartTime = jsonCourse.customStartTime,
                     customEndTime = jsonCourse.customEndTime,
-                    colorInt = courseIndex
+                    colorInt = courseIndex,
+                    weekType = jsonCourse.weekType
                 )
             )
 
@@ -126,7 +127,8 @@ class CourseConversionRepository(
                     isCustomTime = jsonCourse.isCustomTime,
                     customStartTime = jsonCourse.customStartTime,
                     customEndTime = jsonCourse.customEndTime,
-                    colorInt = courseIndex
+                    colorInt = courseIndex,
+                    weekType = jsonCourse.weekType
                 )
             )
 
@@ -227,7 +229,8 @@ class CourseConversionRepository(
                 weeks = weeks,
                 isCustomTime = course.isCustomTime,
                 customStartTime = course.customStartTime,
-                customEndTime = course.customEndTime
+                customEndTime = course.customEndTime,
+                weekType = course.weekType
             )
         }
 

@@ -116,7 +116,8 @@ class AddEditCourseViewModel(
                             isCustomTime = false,
                             customStartTime = null,
                             customEndTime = null,
-                            colorInt = newColorIndex
+                            colorInt = newColorIndex,
+                            weekType = Course.WEEK_TYPE_ALL
                         )
                         Pair(newCourse, newColorIndex)
                     } else {
@@ -156,6 +157,7 @@ class AddEditCourseViewModel(
                         customStartTime = course?.customStartTime.orEmpty(),
                         customEndTime = course?.customEndTime.orEmpty(),
                         colorIndex = initialColorIndex,
+                        weekType = course?.weekType ?: Course.WEEK_TYPE_ALL,
                         weeks = weeks,
                         timeSlots = timeSlots,
                         currentCourseTableId = appSettings.currentCourseTableId,
@@ -175,6 +177,7 @@ class AddEditCourseViewModel(
     fun onEndSectionChange(endSection: Int) { _uiState.update { it.copy(endSection = endSection) } }
     fun onWeeksChange(newWeeks: Set<Int>) { _uiState.update { it.copy(weeks = newWeeks) } }
     fun onColorChange(colorIndex: Int) { _uiState.update { it.copy(colorIndex = colorIndex) } }
+    fun onWeekTypeChange(weekType: Int) { _uiState.update { it.copy(weekType = weekType) } }
     fun onIsCustomTimeChange(isCustom: Boolean) { _uiState.update { it.copy(isCustomTime = isCustom) } }
 
     fun onCustomTimeChange(startTime: String, endTime: String) {
@@ -200,6 +203,7 @@ class AddEditCourseViewModel(
                 customStartTime = state.customStartTime.takeIf { state.isCustomTime && it.isNotEmpty() },
                 customEndTime = state.customEndTime.takeIf { state.isCustomTime && it.isNotEmpty() },
                 colorInt = state.colorIndex,
+                weekType = state.weekType,
                 courseTableId = state.currentCourseTableId.orEmpty()
             )
             if (courseToSave != null) {
@@ -264,6 +268,7 @@ data class AddEditCourseUiState(
     val customStartTime: String = "",
     val customEndTime: String = "",
     val colorIndex: Int = 0,
+    val weekType: Int = Course.WEEK_TYPE_ALL,
     val weeks: Set<Int> = emptySet(),
     val timeSlots: List<TimeSlot> = emptyList(),
     val currentCourseTableId: String? = null,
