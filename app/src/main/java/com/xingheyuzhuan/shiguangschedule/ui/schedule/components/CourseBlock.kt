@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -35,68 +36,71 @@ fun CourseBlock(
     startTime: String? = null
 ) {
     val firstCourse = mergedBlock.courses.firstOrNull()
-    val isDarkTheme = isSystemInDarkTheme() // 获取当前主题模式
+    val isDarkTheme = isSystemInDarkTheme()
 
-    val conflictColorAdapted = if (isDarkTheme) {
-        style.conflictCourseColorDark // 使用深色冲突色
-    } else {
-        style.conflictCourseColor // 使用浅色冲突色
-    }
-
-    // 尝试获取颜色索引 (colorInt)
-    val colorIndex = firstCourse?.course?.colorInt
-        // 检查索引是否在映射表范围内，否则返回 null
-        ?.takeIf { it in style.courseColorMaps.indices }
-
-    // 适配后的课程颜色，如果 colorIndex 存在
-    val courseColorAdapted: Color? = colorIndex?.let { index ->
-        val baseColorMap = style.courseColorMaps[index]
-        if (isDarkTheme) {
-            baseColorMap.dark
+    // 缓存颜色计算，避免每次重组都重新计算
+    val blockColor = remember(mergedBlock.isConflict, firstCourse?.course?.colorInt, isDarkTheme, style) {
+        val conflictColorAdapted = if (isDarkTheme) {
+            style.conflictCourseColorDark
         } else {
-            baseColorMap.light
+            style.conflictCourseColor
         }
-    }
 
-    val fallbackColorAdapted: Color = if (isDarkTheme) {
-        style.courseColorMaps.first().dark
-    } else {
-        style.courseColorMaps.first().light
-    }
+        val colorIndex = firstCourse?.course?.colorInt
+            ?.takeIf { it in style.courseColorMaps.indices }
 
-    val blockColor = if (mergedBlock.isConflict) {
-        conflictColorAdapted.copy(alpha = style.courseBlockAlpha)
-    } else {
-        (courseColorAdapted ?: fallbackColorAdapted).copy(alpha = style.courseBlockAlpha)
+        val courseColorAdapted: Color? = colorIndex?.let { index ->
+            val baseColorMap = style.courseColorMaps[index]
+            if (isDarkTheme) baseColorMap.dark else baseColorMap.light
+        }
+
+        val fallbackColorAdapted: Color = if (isDarkTheme) {
+            style.courseColorMaps.first().dark
+        } else {
+            style.courseColorMaps.first().light
+        }
+
+        if (mergedBlock.isConflict) {
+            conflictColorAdapted.copy(alpha = style.courseBlockAlpha)
+        } else {
+            (courseColorAdapted ?: fallbackColorAdapted).copy(alpha = style.courseBlockAlpha)
+        }
     }
 
     val textColor = MaterialTheme.colorScheme.onSurface
 
-    // --- 字体大小计算逻辑 (新增) ---
-    // 通过将基准字号乘以缩放因子，实现全局联动
-    val s12 = (12 * style.fontScale).sp
-    val s10 = (10 * style.fontScale).sp
+    // 缓存字体大小计算
+    val s12 = remember(style.fontScale) { (12 * style.fontScale).sp }
+    val s10 = remember(style.fontScale) { (10 * style.fontScale).sp }
+    val s14 = remember(style.fontScale) { (14 * style.fontScale).sp }
 
-    val customStartTime = firstCourse?.course?.customStartTime
-    val customEndTime = firstCourse?.course?.customEndTime
-    val customTimeString = if (customStartTime != null && customEndTime != null) {
-        "$customStartTime - $customEndTime"
-    } else {
-        null
+    // 缓存自定义时间字符串
+    val customTimeString = remember(firstCourse?.course?.customStartTime, firstCourse?.course?.customEndTime) {
+        val customStartTime = firstCourse?.course?.customStartTime
+        val customEndTime = firstCourse?.course?.customEndTime
+        if (customStartTime != null && customEndTime != null) {
+            "$customStartTime - $customEndTime"
+        } else {
+            null
+        }
     }
+
     val isCustomTimeCourse = customTimeString != null
+
+    // 缓存 shape，避免重复创建
+    val blockShape = remember { RoundedCornerShape(14.dp) }
 
     Surface(
         modifier = modifier
             .padding(style.courseBlockOuterPadding)
             .shadow(
                 elevation = 6.dp,
-                shape = RoundedCornerShape(14.dp),
+                shape = blockShape,
                 ambientColor = Color.Black.copy(alpha = 0.12f),
                 spotColor = Color.Black.copy(alpha = 0.08f)
             )
-            .clip(RoundedCornerShape(14.dp)),
-        shape = RoundedCornerShape(14.dp),
+            .clip(blockShape),
+        shape = blockShape,
         color = blockColor,
         tonalElevation = 1.dp
     ) {
@@ -110,7 +114,7 @@ fun CourseBlock(
                 mergedBlock.courses.forEach { course ->
                     Text(
                         text = course.course.name,
-                        fontSize = s12, // 使用缩放后的 12sp
+                        fontSize = s12,
                         fontWeight = FontWeight.Bold,
                         color = textColor,
                         overflow = TextOverflow.Ellipsis,
@@ -119,7 +123,7 @@ fun CourseBlock(
                 }
                 Text(
                     text = stringResource(R.string.label_conflict),
-                    fontSize = s10, // 使用缩放后的 10sp
+                    fontSize = s10,
                     color = textColor,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 2.dp)
@@ -128,8 +132,8 @@ fun CourseBlock(
                 // --- 1. 时间显示层 ---
                 if (isCustomTimeCourse) {
                     Text(
-                        text = customTimeString,
-                        fontSize = s10, // 使用缩放后的 10sp
+                        text = customTimeString!!,
+                        fontSize = s10,
                         color = textColor.copy(alpha = 0.8f),
                         fontWeight = FontWeight.SemiBold,
                         overflow = TextOverflow.Ellipsis,
@@ -138,7 +142,7 @@ fun CourseBlock(
                 } else if (style.showStartTime && startTime != null) {
                     Text(
                         text = startTime,
-                        fontSize = s10, // 使用缩放后的 10sp
+                        fontSize = s10,
                         color = textColor.copy(alpha = 0.8f),
                         fontWeight = FontWeight.SemiBold,
                         style = TextStyle(lineHeight = 1.em)
@@ -148,7 +152,7 @@ fun CourseBlock(
                 // --- 2. 课程名称 ---
                 Text(
                     text = firstCourse?.course?.name ?: "",
-                    fontSize = (14 * style.fontScale).sp,
+                    fontSize = s14,
                     fontWeight = FontWeight.Bold,
                     color = textColor,
                     overflow = TextOverflow.Ellipsis,
@@ -157,7 +161,7 @@ fun CourseBlock(
                 )
 
                 // --- 3. 教师 (受 hideTeacher 开关控制) ---
-                if (!style.hideTeacher) { // 如果不隐藏，则显示
+                if (!style.hideTeacher) {
                     val teacher = firstCourse?.course?.teacher ?: ""
                     if (teacher.isNotBlank()) {
                         Text(
@@ -171,10 +175,9 @@ fun CourseBlock(
                 }
 
                 // --- 4. 地点 (受 hideLocation 和 removeLocationAt 开关控制) ---
-                if (!style.hideLocation) { // 如果不隐藏，则显示
+                if (!style.hideLocation) {
                     val position = firstCourse?.course?.position ?: ""
                     if (position.isNotBlank()) {
-                        // 根据 removeLocationAt 决定前缀
                         val prefix = if (style.removeLocationAt) "" else "@"
                         Text(
                             text = "$prefix$position",
