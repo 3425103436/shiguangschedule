@@ -49,6 +49,18 @@ data class WeeklyScheduleUiState(
     val pagerMondayDate: LocalDate = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 )
 
+/**
+ * 预解析的时间槽数据，避免在 mergeCourses 中重复解析
+ */
+private data class ParsedTimeSlot(
+    val slot: TimeSlot,
+    val startTime: LocalTime,
+    val endTime: LocalTime
+)
+
+/** 全局缓存的 DateTimeFormatter，避免重复创建 */
+private val TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class WeeklyScheduleViewModel(
     private val appSettingsRepository: AppSettingsRepository,
@@ -91,13 +103,14 @@ class WeeklyScheduleViewModel(
     ) { date, settings, config, slots ->
         val tableId = settings.currentCourseTableId
         if (tableId != null && config != null) {
+            // 预解析时间槽，供窗口内所有周复用
+            val parsedSlots = preParseTimeSlots(slots)
             // 定义窗口日期列表
             val window = listOf(date.minusWeeks(1), date, date.plusWeeks(1))
-
             // 为窗口内的每一周开启数据监听并合并成 Map
             combine(window.map { day ->
                 courseTableRepository.getCoursesWithWeeksByDate(tableId, day, config)
-                    .map { courses -> day.toString() to mergeCourses(courses, slots) }
+                    .map { courses -> day.toString() to mergeCourses(courses, slots, parsedSlots) }
             }) { results -> results.toMap() }
         } else {
             flowOf(emptyMap())
@@ -110,10 +123,16 @@ class WeeklyScheduleViewModel(
         this.stringProvider = provider
     }
 
+    /** 记录上次修复颜色时的 style hashCode，避免重复修复 */
+    private var lastColorFixStyleHash: Int = 0
+
     init {
         viewModelScope.launch {
             val configAndTimeFlow = combine(
-                appSettingsFlow, courseTableConfigFlow, styleFlow, _pagerMondayDate
+                appSettingsFlow,
+                courseTableConfigFlow,
+                styleFlow,
+                _pagerMondayDate
             ) { settings, config, style, mondayDate ->
                 ScheduleConfigPackage(settings, config, style, mondayDate)
             }
@@ -129,22 +148,25 @@ class WeeklyScheduleViewModel(
                     startDateStr = config?.semesterStartDate,
                     firstDayOfWeekInt = firstDayOfWeekInt
                 )
-
                 val weekIndex = appSettingsRepository.getWeekIndexAtDate(
                     targetDate = configPkg.mondayDate,
                     startDateStr = config?.semesterStartDate,
                     firstDayOfWeekInt = firstDayOfWeekInt
                 )
 
-                // 修正颜色（仅针对本周课程做检查以减小负担）
+                // 仅在 style 变化时修正颜色，避免每次 collect 都触发
                 val currentWeekCourses = cache[configPkg.mondayDate.toString()] ?: emptyList()
-                fixInvalidCourseColors(currentWeekCourses.flatMap { it.courses }, configPkg.style)
+                val styleHash = configPkg.style.hashCode()
+                if (styleHash != lastColorFixStyleHash) {
+                    lastColorFixStyleHash = styleHash
+                    fixInvalidCourseColors(currentWeekCourses.flatMap { it.courses }, configPkg.style)
+                }
 
                 WeeklyScheduleUiState(
                     style = configPkg.style,
                     showWeekends = config?.showWeekends ?: false,
                     totalWeeks = totalWeeks,
-                    courseCache = cache, // 注入全量缓存
+                    courseCache = cache,
                     currentMergedCourses = cache[configPkg.mondayDate.toString()] ?: emptyList(),
                     timeSlots = timeSlots,
                     isSemesterSet = startDate != null,
@@ -184,51 +206,60 @@ class WeeklyScheduleViewModel(
     }
 
     /**
-     * 计算逻辑节次位置。支持超出范围吸附及课间吸附。
+     * 预解析时间槽，避免在 mergeCourses 和 timeToLogicalScale 中重复解析
      */
-    private fun timeToLogicalScale(time: LocalTime, timeSlots: List<TimeSlot>): Float {
-        if (timeSlots.isEmpty()) return 1.0f
-        val formatter = DateTimeFormatter.ofPattern("HH:mm")
-        val sortedSlots = timeSlots.sortedBy { it.number }
-
-        val firstSlotEnd = LocalTime.parse(sortedSlots.first().endTime, formatter)
-        val lastSlotStart = LocalTime.parse(sortedSlots.last().startTime, formatter)
-
-        if (!time.isAfter(firstSlotEnd)) return 1.0f
-        if (!time.isBefore(lastSlotStart)) return sortedSlots.last().number.toFloat()
-
-        val currentSlot = sortedSlots.find {
-            val s = LocalTime.parse(it.startTime, formatter)
-            val e = LocalTime.parse(it.endTime, formatter)
-            !time.isBefore(s) && !time.isAfter(e)
+    private fun preParseTimeSlots(timeSlots: List<TimeSlot>): List<ParsedTimeSlot> {
+        return timeSlots.sortedBy { it.number }.map { slot ->
+            ParsedTimeSlot(
+                slot = slot,
+                startTime = LocalTime.parse(slot.startTime, TIME_FORMATTER),
+                endTime = LocalTime.parse(slot.endTime, TIME_FORMATTER)
+            )
         }
-
-        if (currentSlot != null) {
-            val sTime = LocalTime.parse(currentSlot.startTime, formatter)
-            val eTime = LocalTime.parse(currentSlot.endTime, formatter)
-            val duration = ChronoUnit.MINUTES.between(sTime, eTime).coerceAtLeast(1)
-            return currentSlot.number.toFloat() + (ChronoUnit.MINUTES.between(sTime, time).toFloat() / duration)
-        }
-
-        val nextSlot = sortedSlots.find { LocalTime.parse(it.startTime, formatter).isAfter(time) }
-        val prevSlot = sortedSlots.lastOrNull { LocalTime.parse(it.endTime, formatter).isBefore(time) }
-        return nextSlot?.number?.toFloat() ?: (prevSlot?.number?.toFloat()?.plus(1.0f) ?: 1.0f)
     }
 
     /**
-     * 合并并处理课程块
+     * 计算逻辑节次位置。支持超出范围吸附及课间吸附。
+     * 使用预解析的时间槽数据，避免重复创建 DateTimeFormatter 和解析时间字符串。
      */
-    fun mergeCourses(courses: List<CourseWithWeeks>, timeSlots: List<TimeSlot>): List<MergedCourseBlock> {
+    private fun timeToLogicalScale(time: LocalTime, parsedSlots: List<ParsedTimeSlot>): Float {
+        if (parsedSlots.isEmpty()) return 1.0f
+
+        val firstSlotEnd = parsedSlots.first().endTime
+        val lastSlotStart = parsedSlots.last().startTime
+
+        if (!time.isAfter(firstSlotEnd)) return 1.0f
+        if (!time.isBefore(lastSlotStart)) return parsedSlots.last().slot.number.toFloat()
+
+        val currentSlot = parsedSlots.find { !time.isBefore(it.startTime) && !time.isAfter(it.endTime) }
+        if (currentSlot != null) {
+            val duration = ChronoUnit.MINUTES.between(currentSlot.startTime, currentSlot.endTime).coerceAtLeast(1)
+            return currentSlot.slot.number.toFloat() + (ChronoUnit.MINUTES.between(currentSlot.startTime, time).toFloat() / duration)
+        }
+
+        val nextSlot = parsedSlots.find { it.startTime.isAfter(time) }
+        val prevSlot = parsedSlots.lastOrNull { it.endTime.isBefore(time) }
+        return nextSlot?.slot?.number?.toFloat() ?: (prevSlot?.slot?.number?.toFloat()?.plus(1.0f) ?: 1.0f)
+    }
+
+    /**
+     * 合并并处理课程块。
+     * 使用预解析的时间槽数据以提升性能。
+     */
+    fun mergeCourses(
+        courses: List<CourseWithWeeks>,
+        timeSlots: List<TimeSlot>,
+        parsedSlots: List<ParsedTimeSlot> = preParseTimeSlots(timeSlots)
+    ): List<MergedCourseBlock> {
         if (timeSlots.isEmpty()) return emptyList()
-        val formatter = DateTimeFormatter.ofPattern("HH:mm")
 
         val normalized = courses.mapNotNull { cw ->
             try {
                 val c = cw.course
                 var (startScale, endScale) = if (c.isCustomTime) {
-                    val sTime = LocalTime.parse(c.customStartTime ?: return@mapNotNull null, formatter)
-                    val eTime = LocalTime.parse(c.customEndTime ?: return@mapNotNull null, formatter)
-                    timeToLogicalScale(sTime, timeSlots) to timeToLogicalScale(eTime, timeSlots)
+                    val sTime = LocalTime.parse(c.customStartTime ?: return@mapNotNull null, TIME_FORMATTER)
+                    val eTime = LocalTime.parse(c.customEndTime ?: return@mapNotNull null, TIME_FORMATTER)
+                    timeToLogicalScale(sTime, parsedSlots) to timeToLogicalScale(eTime, parsedSlots)
                 } else {
                     val s = c.startSection?.toFloat() ?: return@mapNotNull null
                     val e = c.endSection?.toFloat() ?: return@mapNotNull null
