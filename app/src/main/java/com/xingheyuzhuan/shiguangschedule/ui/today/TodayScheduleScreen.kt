@@ -124,7 +124,7 @@ fun TodayScheduleScreen(
                     todayCourses.forEach { course ->
                         // key() 让 Compose 按课程唯一标识追踪，
                         // 列表变化时只增删/更新对应项，而非重建整个列表。
-                        key(course.name, course.startTime, course.day) {
+                        key(course.id) {
                             val isCourseFinished = remember(course.endTime) {
                                 try {
                                     val courseEndTime = LocalTime.parse(course.endTime)
