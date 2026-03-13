@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -33,6 +32,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import com.xingheyuzhuan.shiguangschedule.R
@@ -75,10 +75,8 @@ fun ScheduleGrid(
         // 2. 计算尺寸
         val cellWidth = (screenWidth - style.timeColumnWidth) / displayDays.size
         val totalGridHeight = style.sectionHeight * timeSlots.size
-        // 使用 derivedStateOf 缓存网格线颜色，避免每次重组重新计算 copy(alpha=)
-        val gridLineColor by remember {
-            derivedStateOf { MaterialTheme.colorScheme.outline.copy(alpha = 0.08f) }
-        }
+        // 缓存网格线颜色，避免每次重组重新计算 copy(alpha=)
+        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.08f)
 
         // 3. 转换绘图数据 - 使用 remember 缓存
         val schedulables = remember(mergedCourses, firstDayOfWeek, showWeekends) {
