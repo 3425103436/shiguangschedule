@@ -11,6 +11,7 @@ import com.xingheyuzhuan.shiguangschedule.data.repository.AppSettingsRepository
 import com.xingheyuzhuan.shiguangschedule.data.repository.CourseTableRepository
 import com.xingheyuzhuan.shiguangschedule.data.repository.TimeSlotRepository
 import com.xingheyuzhuan.shiguangschedule.data.repository.WidgetRepository
+import com.xingheyuzhuan.shiguangschedule.data.util.WeekCalculator
 import com.xingheyuzhuan.shiguangschedule.widget.updateAllWidgets
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -18,12 +19,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAdjusters
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 /**
  * 负责主数据库和 Widget 数据库之间的数据同步。
@@ -36,17 +33,7 @@ class WidgetDataSynchronizer(
     private val timeSlotRepository: TimeSlotRepository,
     private val widgetRepository: WidgetRepository
 ) {
-    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
     private val WIDGET_SYNC_DAYS = 7L // 同步未来7天的数据
-
-    /**
-     * 根据日期和设置的一周起始日，推算出该日期所在周的起始日。
-     * 用于周数对齐计算，逻辑与 AppSettingsRepository 中保持一致。
-     */
-    private fun getStartDayOfWeek(date: LocalDate, firstDayOfWeekInt: Int): LocalDate {
-        val firstDayOfWeek = DayOfWeek.of(firstDayOfWeekInt)
-        return date.with(TemporalAdjusters.previousOrSame(firstDayOfWeek))
-    }
 
     /**
      * 一个持续发出 Unit 的 Flow，外部只需收集这个 Flow 即可触发同步。
@@ -150,14 +137,14 @@ class WidgetDataSynchronizer(
         val today = LocalDate.now()
 
         val semesterStartDate: LocalDate = try {
-            LocalDate.parse(semesterStartDateString, dateFormatter)
+            LocalDate.parse(semesterStartDateString, WeekCalculator.DATE_FORMATTER)
         } catch (e: Exception) {
             widgetRepository.deleteAll()
             widgetRepository.insertOrUpdateAppSettings(WidgetAppSettings(id = 1, semesterStartDate = null))
             return
         }
 
-        val alignedSemesterStartDate = getStartDayOfWeek(semesterStartDate, firstDayOfWeekInt)
+        val alignedSemesterStartDate = WeekCalculator.getStartDayOfWeek(semesterStartDate, firstDayOfWeekInt)
 
         val widgetCourses = mutableListOf<WidgetCourse>()
         val startSyncDate = if (today.isBefore(alignedSemesterStartDate)) {
@@ -170,9 +157,9 @@ class WidgetDataSynchronizer(
 
         for (i in 0 until WIDGET_SYNC_DAYS) {
             val date = startSyncDate.plusDays(i)
-            val dateString = date.format(dateFormatter)
+            val dateString = date.format(WeekCalculator.DATE_FORMATTER)
 
-            val alignedDate = getStartDayOfWeek(date, firstDayOfWeekInt)
+            val alignedDate = WeekCalculator.getStartDayOfWeek(date, firstDayOfWeekInt)
 
             val diffWeeks = ChronoUnit.WEEKS.between(alignedSemesterStartDate, alignedDate).toInt()
             val weekNumber = diffWeeks + 1

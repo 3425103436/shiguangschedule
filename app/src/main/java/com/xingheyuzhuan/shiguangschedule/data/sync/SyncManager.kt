@@ -77,7 +77,7 @@ class SyncManager(
                     }
                     .launchIn(scope)
 
-                println("WidgetDataSynchronizer started.")
+                Log.d("SyncManager", "WidgetDataSynchronizer started.")
                 Log.d("SyncManager", "所有同步器已启动。")
             }
             .launchIn(scope)

@@ -4,6 +4,7 @@ import com.xingheyuzhuan.shiguangschedule.data.db.main.AppSettings
 import com.xingheyuzhuan.shiguangschedule.data.db.main.AppSettingsDao
 import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseTableConfig
 import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseTableConfigDao
+import com.xingheyuzhuan.shiguangschedule.data.util.WeekCalculator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -11,7 +12,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 /**
@@ -21,8 +21,6 @@ class AppSettingsRepository(
     private val appSettingsDao: AppSettingsDao,
     private val courseTableConfigDao: CourseTableConfigDao
 ) {
-    // 使用线程安全的 java.time.DateTimeFormatter
-    private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     /**
      * 默认的应用设置
@@ -105,7 +103,7 @@ class AppSettingsRepository(
             val firstDayOfWeek = DayOfWeek.of(firstDayOfWeekInt)
 
             // 1. 将开学日期对齐到该周的起始日（锚点）
-            val alignedStartDate = LocalDate.parse(startDateStr, DATE_FORMATTER)
+            val alignedStartDate = LocalDate.parse(startDateStr, WeekCalculator.DATE_FORMATTER)
                 .with(TemporalAdjusters.previousOrSame(firstDayOfWeek))
 
             // 2. 将目标日期也对齐到该周的起始日
@@ -175,6 +173,6 @@ class AppSettingsRepository(
         val startOfThisWeek = today.with(TemporalAdjusters.previousOrSame(firstDayOfWeek))
         val weeksToSubtract = (week - 1).toLong()
         val semesterStartDate = startOfThisWeek.minusWeeks(weeksToSubtract)
-        return semesterStartDate.format(DATE_FORMATTER)
+        return semesterStartDate.format(WeekCalculator.DATE_FORMATTER)
     }
 }

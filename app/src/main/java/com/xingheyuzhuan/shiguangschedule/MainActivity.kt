@@ -7,7 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -67,26 +68,26 @@ fun AppNavigation() {
 
     val depthEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> EnterTransition = {
         slideInVertically(
-            initialOffsetY = { fullHeight -> fullHeight / 5 },
-            animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing)
+            initialOffsetY = { fullHeight -> fullHeight / 6 },
+            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow)
         ) + fadeIn(animationSpec = tween(280, delayMillis = 60)) +
-            scaleIn(initialScale = 0.96f, animationSpec = tween(380, easing = FastOutSlowInEasing))
+            scaleIn(initialScale = 0.96f, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow))
     }
 
     val depthExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> ExitTransition = {
         fadeOut(animationSpec = tween(220)) +
-            scaleOut(targetScale = 0.93f, animationSpec = tween(320, easing = FastOutSlowInEasing))
+            scaleOut(targetScale = 0.90f, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow))
     }
 
     val depthPopEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> EnterTransition = {
         fadeIn(animationSpec = tween(260)) +
-            scaleIn(initialScale = 0.93f, animationSpec = tween(320, easing = FastOutSlowInEasing))
+            scaleIn(initialScale = 0.90f, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow))
     }
 
     val depthPopExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> ExitTransition = {
         slideOutVertically(
             targetOffsetY = { fullHeight -> fullHeight / 4 },
-            animationSpec = tween(durationMillis = 340, easing = FastOutSlowInEasing)
+            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow)
         ) + fadeOut(animationSpec = tween(260))
     }
 

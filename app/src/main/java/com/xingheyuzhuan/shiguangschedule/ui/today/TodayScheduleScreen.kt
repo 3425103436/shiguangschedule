@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import com.xingheyuzhuan.shiguangschedule.R
 import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
 import java.time.format.FormatStyle
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,9 +84,14 @@ fun TodayScheduleScreen(
             }
 
             Text(
-                text = "$todayDateString $todayDayOfWeekString",
+                text = todayDateString,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = todayDayOfWeekString,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -126,7 +132,8 @@ fun TodayScheduleScreen(
                         // 列表变化时只增删/更新对应项，而非重建整个列表。
                         key(course.id) {
                             val isCourseFinished = remember(course.endTime) {
-                                try {
+                                if (course.endTime.isBlank()) false
+                                else try {
                                     val courseEndTime = LocalTime.parse(course.endTime)
                                     currentTime.isAfter(courseEndTime)
                                 } catch (e: Exception) {
@@ -151,6 +158,7 @@ fun TodayScheduleScreen(
 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = cardColor,
                                 contentColor = contentColor
@@ -160,7 +168,7 @@ fun TodayScheduleScreen(
                             )
                         ) {
                             Column(
-                                modifier = Modifier.padding(12.dp)
+                                modifier = Modifier.padding(16.dp)
                             ) {
                                 Text(
                                     text = course.name,
@@ -168,41 +176,28 @@ fun TodayScheduleScreen(
                                         textDecoration = if (isCourseFinished) TextDecoration.LineThrough else TextDecoration.None
                                     ),
                                     fontWeight = FontWeight.Bold,
-                                    color = contentColor
+                                    color = if (isCourseFinished) contentColor.copy(alpha = 0.6f) else contentColor
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Start
-                                ) {
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                val infoParts = buildList {
+                                    val timeText = when {
+                                        course.startTime.isNotBlank() && course.endTime.isNotBlank() -> "${course.startTime} - ${course.endTime}"
+                                        course.startTime.isNotBlank() -> course.startTime
+                                        else -> null
+                                    }
+                                    timeText?.let { add(it) }
+                                    course.position.takeIf { it.isNotBlank() }?.let { add(it) }
+                                    course.teacher.takeIf { it.isNotBlank() }?.let { add(it) }
+                                }
+                                if (infoParts.isNotEmpty()) {
                                     Text(
-                                        text = "${course.startTime} - ${course.endTime}",
+                                        text = infoParts.joinToString(" \u00B7 "),
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = contentColor
+                                        color = if (isCourseFinished) contentColor.copy(alpha = 0.5f) else contentColor,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
-
-                                    course.position.takeIf { it.isNotBlank() }?.let { position ->
-                                        Text(" | ", style = MaterialTheme.typography.bodySmall, color = contentColor)
-                                        Text(
-                                            text = position,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = contentColor,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-
-                                    course.teacher.takeIf { it.isNotBlank() }?.let { teacher ->
-                                        Text(" | ", style = MaterialTheme.typography.bodySmall, color = contentColor)
-                                        Text(
-                                            text = teacher,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = contentColor,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
                                 }
                             }
                         }

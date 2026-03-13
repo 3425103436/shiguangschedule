@@ -1,7 +1,8 @@
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -121,7 +122,10 @@ fun ScheduleGrid(
                             val isPressed by interactionSource.collectIsPressedAsState()
                             val scale by animateFloatAsState(
                                 targetValue = if (isPressed) 0.96f else 1f,
-                                animationSpec = tween(durationMillis = 100),
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessHigh
+                                ),
                                 label = "courseBlockPressScale"
                             )
 

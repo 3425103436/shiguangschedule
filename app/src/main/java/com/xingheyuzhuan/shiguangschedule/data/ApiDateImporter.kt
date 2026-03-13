@@ -1,5 +1,6 @@
 package com.xingheyuzhuan.shiguangschedule.data
 
+import android.util.Log
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -81,6 +82,7 @@ object ApiDateImporter {
     /**
      * 从 API 获取跳过的日期（假期），并保存到 AppSettingsRepository 中。
      */
+    @Deprecated("此函数从未在应用中被调用，保留以备将来使用。")
     suspend fun importAndSaveSkippedDates(appSettingsRepository: AppSettingsRepository) {
         try {
             val response = apiService.getHolidays()
@@ -94,13 +96,11 @@ object ApiDateImporter {
             val updatedSettings = currentSettings.copy(skippedDates = skippedDates)
             appSettingsRepository.insertOrUpdateAppSettings(updatedSettings)
 
-            println("成功导入并保存了 ${skippedDates.size} 个跳过的日期。")
+            Log.d("ApiDateImporter", "成功导入并保存了 ${skippedDates.size} 个跳过的日期。")
         } catch (e: IOException) {
-            println("网络请求失败：${e.message}")
-            e.printStackTrace()
+            Log.e("ApiDateImporter", "网络请求失败：${e.message}", e)
         } catch (e: Exception) {
-            println("导入或解析跳过的日期时出错：${e.message}")
-            e.printStackTrace()
+            Log.e("ApiDateImporter", "导入或解析跳过的日期时出错：${e.message}", e)
         }
     }
 }

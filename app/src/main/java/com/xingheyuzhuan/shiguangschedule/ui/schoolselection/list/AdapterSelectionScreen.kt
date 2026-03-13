@@ -1,6 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -98,7 +99,7 @@ fun AdapterSelectionScreen(
             val loadedAdapters = viewModel.getAdaptersForSchoolAndCategory(schoolId)
             adapters = loadedAdapters
         } catch (e: Exception) {
-            println("Error loading adapters for $schoolName: ${e.message}")
+            Log.e("AdapterSelection", "Error loading adapters for $schoolName: ${e.message}", e)
             adapters = emptyList()
         } finally {
             isLoading = false

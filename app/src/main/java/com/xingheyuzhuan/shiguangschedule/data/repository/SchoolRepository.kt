@@ -1,6 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.data.repository
 
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -30,7 +31,7 @@ object SchoolRepository {
             val internalFile = File(context.filesDir, "repo/index/school_index.pb")
 
             if (!internalFile.exists()) {
-                println("错误：Protobuf 索引文件未在内部存储中找到，路径为 ${internalFile.absolutePath}。请确保 initOfflineRepo() 已完成。")
+                Log.e("SchoolRepository", "Protobuf 索引文件未在内部存储中找到，路径为 ${internalFile.absolutePath}。请确保 initOfflineRepo() 已完成。")
                 return@withContext null
             }
 

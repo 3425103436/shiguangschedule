@@ -1,6 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.data.db.main
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -101,7 +102,7 @@ abstract class MainAppDatabase : RoomDatabase() {
                                     database.timeSlotDao().insertAll(defaultTimeSlots)
 
                                     _isInitialized.value = true
-                                    println("数据库初始化数据已完成写入")
+                                    Log.d("MainAppDatabase", "数据库初始化数据已完成写入")
                                 }
                             }
                         }
