@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -107,7 +108,12 @@ fun TodayScheduleScreen(
                     )
                 }
             } else {
-                val currentTime = LocalTime.now()
+                // 稳定 currentTime：使用 remember 使其在同一组合周期内不变，
+                // 避免滚动等无关重组导致所有 isCourseFinished 重新计算。
+                val currentTime = remember { LocalTime.now() }
+
+                // 预计算内容颜色，避免在循环内重复创建
+                val contentColor = if (isDark) Color.White else Color.Black
 
                 Column(
                     modifier = Modifier
@@ -116,14 +122,17 @@ fun TodayScheduleScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     todayCourses.forEach { course ->
-                        val isCourseFinished = remember(currentTime, course) {
-                            try {
-                                val courseEndTime = LocalTime.parse(course.endTime)
-                                currentTime.isAfter(courseEndTime)
-                            } catch (e: Exception) {
-                                false
+                        // key() 让 Compose 按课程唯一标识追踪，
+                        // 列表变化时只增删/更新对应项，而非重建整个列表。
+                        key(course.name, course.startTime, course.day) {
+                            val isCourseFinished = remember(course.endTime) {
+                                try {
+                                    val courseEndTime = LocalTime.parse(course.endTime)
+                                    currentTime.isAfter(courseEndTime)
+                                } catch (e: Exception) {
+                                    false
+                                }
                             }
-                        }
 
                         // 3. 根据课程的 colorInt 获取对应的配色对
                         val colorPair = gridStyle.courseColorMaps.getOrElse(course.colorInt) {
@@ -140,14 +149,11 @@ fun TodayScheduleScreen(
                             baseColor
                         }
 
-                        // 计算文字颜色（深色模式下用白色，浅色通常用黑色或深色，取决于背景）
-                        val contentColor = if (isDark) Color.White else Color.Black
-
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
                                 containerColor = cardColor,
-                                contentColor = contentColor // 自动应用到卡片内的文字
+                                contentColor = contentColor
                             ),
                             elevation = CardDefaults.cardElevation(
                                 defaultElevation = if (isCourseFinished) 0.dp else 2.dp
@@ -200,6 +206,7 @@ fun TodayScheduleScreen(
                                 }
                             }
                         }
+                        } // key()
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -87,22 +88,38 @@ fun CourseBlock(
 
     val isCustomTimeCourse = customTimeString != null
 
-    // 缓存 shape，避免重复创建
-    val blockShape = remember { RoundedCornerShape(14.dp) }
+    // 使用 style 中的圆角值，跟随用户设置变化
+    val blockShape = remember(style.courseBlockCornerRadius) {
+        RoundedCornerShape(style.courseBlockCornerRadius)
+    }
+
+    // 壁纸模式下降低不透明度，增加通透感
+    val effectiveBlockColor = if (style.hasBackgroundImage) {
+        blockColor.copy(alpha = blockColor.alpha * 0.75f)
+    } else {
+        blockColor
+    }
+
+    val borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
 
     Surface(
         modifier = modifier
             .padding(style.courseBlockOuterPadding)
             .shadow(
-                elevation = 6.dp,
+                elevation = 4.dp,
                 shape = blockShape,
-                ambientColor = Color.Black.copy(alpha = 0.12f),
-                spotColor = Color.Black.copy(alpha = 0.08f)
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.05f)
             )
-            .clip(blockShape),
+            .clip(blockShape)
+            .border(
+                width = 0.5.dp,
+                color = borderColor,
+                shape = blockShape
+            ),
         shape = blockShape,
-        color = blockColor,
-        tonalElevation = 1.dp
+        color = effectiveBlockColor,
+        tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier

@@ -1,5 +1,6 @@
 package com.xingheyuzhuan.shiguangschedule.data.model
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.DualColorProto
@@ -9,7 +10,9 @@ import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.ScheduleGrid
 
 /**
  * 浅色和深色模式下的颜色对。
+ * @Immutable 标记：纯值对象，避免 Compose 不必要的重组检查。
  */
+@Immutable
 data class DualColor(val light: Color, val dark: Color)
 
 /**
@@ -59,27 +62,39 @@ data class ScheduleGridStyle(
         internal val DEFAULT_TIME_COLUMN_WIDTH = 40f
         internal val DEFAULT_DAY_HEADER_HEIGHT = 45f
         internal val DEFAULT_SECTION_HEIGHT = 70f
-        internal val DEFAULT_BLOCK_CORNER_RADIUS = 4f
-        internal val DEFAULT_BLOCK_OUTER_PADDING = 1f
-        internal val DEFAULT_BLOCK_INNER_PADDING = 4f
-        internal val DEFAULT_BLOCK_ALPHA = 1f
+        internal val DEFAULT_BLOCK_CORNER_RADIUS = 14f
+        internal val DEFAULT_BLOCK_OUTER_PADDING = 2.5f
+        internal val DEFAULT_BLOCK_INNER_PADDING = 6f
+        internal val DEFAULT_BLOCK_ALPHA = 0.88f
         internal val DEFAULT_FONT_SCALE = 1f
-        internal val DEFAULT_CONFLICT_COLOR = 0xFFFF9999L
-        internal val DEFAULT_CONFLICT_COLOR_DARK = 0xFF660000L
+        internal val DEFAULT_CONFLICT_COLOR = 0xFFFFD4D4L
+        internal val DEFAULT_CONFLICT_COLOR_DARK = 0xFF4D1A1AL
 
         internal val DEFAULT_COLOR_MAPS = listOf(
-            DualColor(light = Color(0xFFFFCC99), dark = Color(0xFF663300)),
-            DualColor(light = Color(0xFFFFE699), dark = Color(0xFF664D00)),
-            DualColor(light = Color(0xFFE6FF99), dark = Color(0xFF4D6600)),
-            DualColor(light = Color(0xFFCCFF99), dark = Color(0xFF336600)),
-            DualColor(light = Color(0xFF99FFB3), dark = Color(0xFF00661A)),
-            DualColor(light = Color(0xFF99FFE6), dark = Color(0xFF00664D)),
-            DualColor(light = Color(0xFF99FFFF), dark = Color(0xFF006666)),
-            DualColor(light = Color(0xFF99E6FF), dark = Color(0xFF004D66)),
-            DualColor(light = Color(0xFFB399FF), dark = Color(0xFF1A0066)),
-            DualColor(light = Color(0xFFFF99E6), dark = Color(0xFF66004D)),
-            DualColor(light = Color(0xFFFF99CC), dark = Color(0xFF660033)),
-            DualColor(light = Color(0xFFFF99B3), dark = Color(0xFF66001A)),
+            // 1. Soft Peach
+            DualColor(light = Color(0xFFFDE8D8), dark = Color(0xFF5C3A28)),
+            // 2. Cream Yellow
+            DualColor(light = Color(0xFFFFF4D6), dark = Color(0xFF5C4E28)),
+            // 3. Mint Green
+            DualColor(light = Color(0xFFDCF5E7), dark = Color(0xFF28503A)),
+            // 4. Soft Sage
+            DualColor(light = Color(0xFFE4F0D8), dark = Color(0xFF3A5028)),
+            // 5. Baby Blue
+            DualColor(light = Color(0xFFDDE9FF), dark = Color(0xFF283C5C)),
+            // 6. Lavender
+            DualColor(light = Color(0xFFE8DFFF), dark = Color(0xFF3A2860)),
+            // 7. Rose Quartz
+            DualColor(light = Color(0xFFFFE3EE), dark = Color(0xFF5C2840)),
+            // 8. Sky Mist
+            DualColor(light = Color(0xFFD6F0F5), dark = Color(0xFF284850)),
+            // 9. Warm Gray
+            DualColor(light = Color(0xFFF0EDE8), dark = Color(0xFF48443C)),
+            // 10. Soft Coral
+            DualColor(light = Color(0xFFFEE0DB), dark = Color(0xFF5C3430)),
+            // 11. Lilac
+            DualColor(light = Color(0xFFF0E0F5), dark = Color(0xFF48305C)),
+            // 12. Pale Teal
+            DualColor(light = Color(0xFFD8F0EC), dark = Color(0xFF2D4844)),
         )
 
         /**

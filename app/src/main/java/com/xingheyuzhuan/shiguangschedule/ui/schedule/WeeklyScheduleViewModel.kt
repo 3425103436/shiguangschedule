@@ -10,6 +10,8 @@ import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseWithWeeks
 import com.xingheyuzhuan.shiguangschedule.data.db.main.TimeSlot
 import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
 import com.xingheyuzhuan.shiguangschedule.data.repository.*
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -23,7 +25,9 @@ import java.time.temporal.TemporalAdjusters
 /**
  * 课表展示块：封装单次或冲突课程
  * startSection/endSection：逻辑节次偏移量（0.0 代表第一节课顶部）
+ * @Immutable 标记告知 Compose 此对象创建后不会变化，避免逐字段 equals 检查。
  */
+@Immutable
 data class MergedCourseBlock(
     val day: Int,
     val startSection: Float,
@@ -33,6 +37,11 @@ data class MergedCourseBlock(
     val needsProportionalRendering: Boolean = false
 )
 
+/**
+ * @Stable 标记：属性通过 StateFlow 更新，Compose 可信赖其稳定性，
+ * 避免每帧对整个 UiState 做深度 equals。
+ */
+@Stable
 data class WeeklyScheduleUiState(
     val style: ScheduleGridStyle = ScheduleGridStyle(),
     val showWeekends: Boolean = false,

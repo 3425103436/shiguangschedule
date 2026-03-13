@@ -1,9 +1,13 @@
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +16,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +27,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
@@ -67,7 +75,10 @@ fun ScheduleGrid(
         // 2. 计算尺寸
         val cellWidth = (screenWidth - style.timeColumnWidth) / displayDays.size
         val totalGridHeight = style.sectionHeight * timeSlots.size
-        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.08f)
+        // 使用 derivedStateOf 缓存网格线颜色，避免每次重组重新计算 copy(alpha=)
+        val gridLineColor by remember {
+            derivedStateOf { MaterialTheme.colorScheme.outline.copy(alpha = 0.08f) }
+        }
 
         // 3. 转换绘图数据 - 使用 remember 缓存
         val schedulables = remember(mergedCourses, firstDayOfWeek, showWeekends) {
@@ -83,6 +94,11 @@ fun ScheduleGrid(
             }
         }
 
+        // 4. 预计算 TimeSlot 查找表，避免在每个课程块内部做 list.find()
+        val timeSlotMap = remember(timeSlots) {
+            timeSlots.associateBy { it.number }
+        }
+
         Column(Modifier.fillMaxSize()) {
             DayHeader(style, displayDays, dates, cellWidth, todayIndex, gridLineColor)
 
@@ -96,24 +112,43 @@ fun ScheduleGrid(
                     }
 
                     schedulables.forEach { item ->
-                        val topOffset = item.startSection * style.sectionHeight
-                        val blockHeight = (item.endSection - item.startSection) * style.sectionHeight
+                        // key() 保证 Compose 按课程 ID 追踪每个块，
+                        // 单个课程变化时只重组该块，而非整个网格。
+                        key(item.rawData.courses.firstOrNull()?.course?.id ?: item.hashCode()) {
+                            val topOffset = item.startSection * style.sectionHeight
+                            val blockHeight = (item.endSection - item.startSection) * style.sectionHeight
 
-                        Box(
-                            modifier = Modifier
-                                .offset(x = item.columnIndex * cellWidth, y = topOffset)
-                                .size(width = cellWidth, height = blockHeight)
-                                .padding(style.courseBlockOuterPadding)
-                                .clickable { onCourseBlockClicked(item.rawData) }
-                        ) {
-                            CourseBlock(
-                                mergedBlock = item.rawData,
-                                style = style,
-                                startTime = item.rawData.courses.firstOrNull()?.course?.let {
-                                    if(it.isCustomTime) it.customStartTime
-                                    else timeSlots.find { ts -> ts.number == it.startSection }?.startTime
-                                }
+                            // 点击缩放动画
+                            val interactionSource = remember { MutableInteractionSource() }
+                            val isPressed by interactionSource.collectIsPressedAsState()
+                            val scale by animateFloatAsState(
+                                targetValue = if (isPressed) 0.96f else 1f,
+                                animationSpec = tween(durationMillis = 100),
+                                label = "courseBlockPressScale"
                             )
+
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = item.columnIndex * cellWidth, y = topOffset)
+                                    .size(width = cellWidth, height = blockHeight)
+                                    .graphicsLayer {
+                                        scaleX = scale
+                                        scaleY = scale
+                                    }
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    ) { onCourseBlockClicked(item.rawData) }
+                            ) {
+                                CourseBlock(
+                                    mergedBlock = item.rawData,
+                                    style = style,
+                                    startTime = item.rawData.courses.firstOrNull()?.course?.let {
+                                        if (it.isCustomTime) it.customStartTime
+                                        else timeSlotMap[it.startSection]?.startTime
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -125,8 +160,12 @@ fun ScheduleGrid(
 // 子组件
 @Composable
 private fun DayHeader(style: ScheduleGridStyleComposed, displayDays: List<String>, dates: List<String>, cellWidth: Dp, todayIndex: Int, lineColor: Color) {
-    // 预缓存颜色，避免每次重组重新计算
-    val surfaceColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+    // 壁纸模式下降低不透明度实现毛玻璃感
+    val surfaceColor = if (style.hasBackgroundImage) {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)
+    } else {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+    }
     val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.48f)
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -155,7 +194,7 @@ private fun DayHeader(style: ScheduleGridStyleComposed, displayDays: List<String
                     Text(
                         text = day,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
                         color = onSurfaceColor
                     )
                     if (!style.hideDateUnderDay && dates.size > index) {
@@ -173,7 +212,12 @@ private fun DayHeader(style: ScheduleGridStyleComposed, displayDays: List<String
 
 @Composable
 private fun TimeColumn(style: ScheduleGridStyleComposed, timeSlots: List<TimeSlot>, onTimeSlotClicked: () -> Unit, modifier: Modifier, lineColor: Color) {
-    val surfaceColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.86f)
+    // 壁纸模式下降低不透明度实现毛玻璃感
+    val surfaceColor = if (style.hasBackgroundImage) {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)
+    } else {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.86f)
+    }
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
 
@@ -181,7 +225,7 @@ private fun TimeColumn(style: ScheduleGridStyleComposed, timeSlots: List<TimeSlo
         modifier = modifier
             .width(style.timeColumnWidth)
             .padding(start = 6.dp, end = 6.dp, top = 8.dp)
-            .shadow(3.dp, RoundedCornerShape(12.dp), ambientColor = Color.Black.copy(alpha = 0.06f))
+            .shadow(2.dp, RoundedCornerShape(12.dp), ambientColor = Color.Black.copy(alpha = 0.06f))
             .clip(RoundedCornerShape(12.dp)),
         color = surfaceColor,
         shape = RoundedCornerShape(12.dp)
@@ -197,8 +241,8 @@ private fun TimeColumn(style: ScheduleGridStyleComposed, timeSlots: List<TimeSlo
                     verticalArrangement = Arrangement.Center) {
                     Text(
                         text = slot.number.toString(),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = onSurfaceColor
                     )
                     if (!style.hideSectionTime) {

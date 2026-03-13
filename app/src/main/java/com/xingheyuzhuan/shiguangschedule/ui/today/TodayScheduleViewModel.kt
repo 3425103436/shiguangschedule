@@ -12,12 +12,15 @@ import com.xingheyuzhuan.shiguangschedule.data.db.widget.WidgetAppSettings
 import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
 import com.xingheyuzhuan.shiguangschedule.data.repository.StyleSettingsRepository
 import com.xingheyuzhuan.shiguangschedule.data.repository.WidgetRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class TodayScheduleViewModel(
     application: Application,
     private val widgetRepository: WidgetRepository,
@@ -69,27 +72,26 @@ class TodayScheduleViewModel(
         initialValue = getString(R.string.title_loading)
     )
 
-    private val _todayCourses = MutableStateFlow<List<WidgetCourse>>(emptyList())
-    val todayCourses: StateFlow<List<WidgetCourse>> = _todayCourses.asStateFlow()
-
-    init {
-        loadTodayCourses()
-        viewModelScope.launch {
-            widgetRepository.dataUpdatedFlow.collect {
-                loadTodayCourses()
-            }
-        }
-    }
-
-    private fun loadTodayCourses() {
-        viewModelScope.launch {
+    /**
+     * 修复：使用 flatMapLatest 替代手动 launch+collect 模式。
+     * 旧实现每次 loadTodayCourses() 都会启动新协程收集 Flow，
+     * 造成多个活跃收集器同时运行（协程泄漏）。
+     * 新实现：dataUpdatedFlow 触发时自动切换到最新查询，旧查询自动取消。
+     * flowOn(Dispatchers.IO) 确保数据库查询在 IO 线程执行。
+     */
+    val todayCourses: StateFlow<List<WidgetCourse>> = widgetRepository.dataUpdatedFlow
+        .onStart { emit(Unit) } // 初始触发一次加载
+        .flatMapLatest {
             val today = LocalDate.now()
             val todayString = today.format(DateTimeFormatter.ISO_LOCAL_DATE)
-            widgetRepository.getWidgetCoursesByDateRange(todayString, todayString).collect { courses ->
-                _todayCourses.value = courses
-            }
+            widgetRepository.getWidgetCoursesByDateRange(todayString, todayString)
         }
-    }
+        .flowOn(Dispatchers.IO)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     // 更新 Factory 以支持注入 StyleSettingsRepository
     class TodayScheduleViewModelFactory(private val application: Application) : ViewModelProvider.Factory {

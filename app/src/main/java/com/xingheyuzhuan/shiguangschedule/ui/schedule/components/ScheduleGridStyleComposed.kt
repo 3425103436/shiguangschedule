@@ -1,5 +1,6 @@
 package com.xingheyuzhuan.shiguangschedule.ui.schedule.components
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
@@ -10,7 +11,9 @@ import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
 /**
  * 【Presentation Layer Model】
  * 将原始 Float/Long 值的 ScheduleGridStyle 转换为 Compose 强类型 Dp/Color 的包装对象。
+ * @Immutable 标记告知 Compose 编译器此类型在创建后不会改变，跳过不必要的重组检查。
  */
+@Immutable
 data class ScheduleGridStyleComposed(
     // Grid 尺寸 (Dp)
     val timeColumnWidth: Dp,
@@ -44,6 +47,9 @@ data class ScheduleGridStyleComposed(
     val hideTeacher: Boolean,        // 是否隐藏授课老师
     val removeLocationAt: Boolean    // 是否移除地点前的 @ 符号
 ) {
+    /** 是否设置了背景壁纸，用于毛玻璃效果判断 */
+    val hasBackgroundImage: Boolean get() = backgroundImagePath.isNotEmpty()
+
     companion object {
         /**
          * 扩展函数：将数据模型 (Float/Long) 转换为 UI 强类型模型 (Dp/Color)。
