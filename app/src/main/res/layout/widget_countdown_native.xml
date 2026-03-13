@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_countdown_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 主内容区域 -->
+    <LinearLayout
+        android:id="@+id/container_countdown_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_bg_rounded"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <!-- 头部：日期和周次 -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tv_countdown_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="10dp"
+                tools:text="3月13日 周四" />
+
+            <TextView
+                android:id="@+id/tv_countdown_week"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="10dp"
+                tools:text="第 5 周" />
+        </RelativeLayout>
+
+        <!-- 倒计时标签 -->
+        <TextView
+            android:id="@+id/tv_countdown_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="11dp"
+            tools:text="下一节课 · 还有" />
+
+        <!-- 倒计时数字（大字体） -->
+        <TextView
+            android:id="@+id/tv_countdown_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="28dp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            tools:text="1:25" />
+
+        <!-- 课程信息区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- 颜色指示条 -->
+            <View
+                android:id="@+id/countdown_course_indicator"
+                android:layout_width="3dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="@color/widget_text_primary" />
+
+            <View
+                android:id="@+id/countdown_course_indicator_dark"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_countdown_course_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="13dp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="高等数学" />
+
+                <TextView
+                    android:id="@+id/tv_countdown_course_position"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/widget_text_secondary"
+                    android:textSize="11dp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="教学楼 A-301" />
+
+                <TextView
+                    android:id="@+id/tv_countdown_course_time_range"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:textColor="@color/widget_text_hint"
+                    android:textSize="10dp"
+                    tools:text="08:00 - 09:35" />
+
+                <TextView
+                    android:id="@+id/tv_countdown_course_teacher"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:textColor="@color/widget_text_hint"
+                    android:textSize="10dp"
+                    android:visibility="gone"
+                    tools:text="张教授" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 状态显示区域（无课/假期/课程结束） -->
+    <LinearLayout
+        android:id="@+id/container_countdown_status"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_bg_rounded"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="14dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_countdown_status_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="32dp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            tools:text="--:--" />
+
+        <TextView
+            android:id="@+id/tv_countdown_status_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            tools:text="今日无课" />
+
+        <TextView
+            android:id="@+id/tv_countdown_status_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="11dp"
+            tools:text="好好休息一下" />
+    </LinearLayout>
+</RelativeLayout>

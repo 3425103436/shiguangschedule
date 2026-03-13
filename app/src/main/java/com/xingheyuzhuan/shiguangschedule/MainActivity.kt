@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.xingheyuzhuan.shiguangschedule.ui.ai.AiChatScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.WeeklyScheduleScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list.AdapterSelectionScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list.SchoolSelectionListScreen
@@ -65,29 +68,49 @@ class MainActivity : AppCompatActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
 
+    // 优化：使用 Spring 弹性动画替代部分 Tween，实现更自然的 Q 弹效果
     val depthEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> EnterTransition = {
         slideInVertically(
-            initialOffsetY = { fullHeight -> fullHeight / 5 },
-            animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing)
-        ) + fadeIn(animationSpec = tween(280, delayMillis = 60)) +
-            scaleIn(initialScale = 0.96f, animationSpec = tween(380, easing = FastOutSlowInEasing))
+            initialOffsetY = { fullHeight -> fullHeight / 6 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        ) + fadeIn(
+            animationSpec = tween(250, delayMillis = 40)
+        ) + scaleIn(
+            initialScale = 0.94f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        )
     }
 
     val depthExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> ExitTransition = {
-        fadeOut(animationSpec = tween(220)) +
-            scaleOut(targetScale = 0.93f, animationSpec = tween(320, easing = FastOutSlowInEasing))
+        fadeOut(animationSpec = tween(200)) +
+            scaleOut(
+                targetScale = 0.92f,
+                animationSpec = tween(280, easing = FastOutSlowInEasing)
+            )
     }
 
     val depthPopEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> EnterTransition = {
-        fadeIn(animationSpec = tween(260)) +
-            scaleIn(initialScale = 0.93f, animationSpec = tween(320, easing = FastOutSlowInEasing))
+        fadeIn(animationSpec = tween(240)) +
+            scaleIn(
+                initialScale = 0.92f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
     }
 
     val depthPopExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> ExitTransition = {
         slideOutVertically(
-            targetOffsetY = { fullHeight -> fullHeight / 4 },
-            animationSpec = tween(durationMillis = 340, easing = FastOutSlowInEasing)
-        ) + fadeOut(animationSpec = tween(260))
+            targetOffsetY = { fullHeight -> fullHeight / 5 },
+            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+        ) + fadeOut(animationSpec = tween(240))
     }
 
     NavHost(
@@ -123,8 +146,17 @@ fun AppNavigation() {
         ) {
             TodayScheduleScreen(navController = navController)
         }
+        composable(
+            Screen.AiChat.route,
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None }
+        ) {
+            AiChatScreen()
+        }
 
-        // 所有子页面的转场也都是瞬间完成的
+        // 所有子页面使用 Q 弹动画转场
         composable(
             Screen.TimeSlotSettings.route,
             enterTransition = depthEnterTransition,
@@ -264,16 +296,16 @@ fun AppNavigation() {
             popEnterTransition = depthPopEnterTransition,
             popExitTransition = depthPopExitTransition
         ) {
-            OpenSourceLicensesScreen (navController = navController)
+            OpenSourceLicensesScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(
-            Screen.UpdateRepo.route,
+            Screen.StyleSettings.route,
             enterTransition = depthEnterTransition,
             exitTransition = depthExitTransition,
             popEnterTransition = depthPopEnterTransition,
             popExitTransition = depthPopExitTransition
         ) {
-            UpdateRepoScreen(navController = navController)
+            StyleSettingsScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(
             Screen.QuickActions.route,
@@ -285,38 +317,52 @@ fun AppNavigation() {
             QuickActionsScreen(navController = navController)
         }
         composable(
+            Screen.QuickDelete.route,
+            enterTransition = depthEnterTransition,
+            exitTransition = depthExitTransition,
+            popEnterTransition = depthPopEnterTransition,
+            popExitTransition = depthPopExitTransition
+        ) {
+            QuickDeleteScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(
             Screen.TweakSchedule.route,
             enterTransition = depthEnterTransition,
             exitTransition = depthExitTransition,
             popEnterTransition = depthPopEnterTransition,
             popExitTransition = depthPopExitTransition
         ) {
-            TweakScheduleScreen(navController = navController)
+            TweakScheduleScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(
-            Screen.ContributionList.route,
+            Screen.Contribution.route,
             enterTransition = depthEnterTransition,
             exitTransition = depthExitTransition,
             popEnterTransition = depthPopEnterTransition,
             popExitTransition = depthPopExitTransition
         ) {
-            ContributionScreen(navController = navController)
+            ContributionScreen(onNavigateBack = { navController.popBackStack() })
         }
-        // 课程管理 - 一级页面：课程名称列表
         composable(
-            Screen.CourseManagementList.route,
+            Screen.UpdateRepo.route,
             enterTransition = depthEnterTransition,
             exitTransition = depthExitTransition,
             popEnterTransition = depthPopEnterTransition,
             popExitTransition = depthPopExitTransition
         ) {
-            // CourseNameListScreen 负责显示不重复的课程名称
+            UpdateRepoScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(
+            Screen.CourseNameList.route,
+            enterTransition = depthEnterTransition,
+            exitTransition = depthExitTransition,
+            popEnterTransition = depthPopEnterTransition,
+            popExitTransition = depthPopExitTransition
+        ) {
             CourseNameListScreen(navController = navController)
         }
-
-        // 课程管理 - 二级页面：课程实例网格
         composable(
-            route = Screen.CourseManagementDetail.route,
+            route = Screen.CourseInstanceList.route,
             arguments = listOf(
                 navArgument(COURSE_NAME_ARG) { type = NavType.StringType }
             ),
@@ -325,32 +371,11 @@ fun AppNavigation() {
             popEnterTransition = depthPopEnterTransition,
             popExitTransition = depthPopExitTransition
         ) { backStackEntry ->
-            val courseName = Uri.decode(backStackEntry.arguments?.getString(COURSE_NAME_ARG) ?: "")
+            val courseName = backStackEntry.arguments?.getString(COURSE_NAME_ARG) ?: ""
             CourseInstanceListScreen(
                 courseName = courseName,
-                onNavigateBack = { navController.popBackStack() },
                 navController = navController
             )
-        }
-        // 外观定制页面
-        composable(
-            Screen.StyleSettings.route,
-            enterTransition = depthEnterTransition,
-            exitTransition = depthExitTransition,
-            popEnterTransition = depthPopEnterTransition,
-            popExitTransition = depthPopExitTransition
-        ) {
-            StyleSettingsScreen(navController = navController)
-        }
-        // 快速删除课程页面
-        composable(
-            Screen.QuickDelete.route,
-            enterTransition = depthEnterTransition,
-            exitTransition = depthExitTransition,
-            popEnterTransition = depthPopEnterTransition,
-            popExitTransition = depthPopExitTransition
-        ) {
-            QuickDeleteScreen(navController = navController)
         }
     }
 }

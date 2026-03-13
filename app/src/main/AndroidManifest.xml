@@ -105,6 +105,18 @@
                 android:resource="@xml/shiguangschedule_large_widget" />
         </receiver>
 
+        <receiver
+            android:name=".widget.countdown.CountdownNativeProvider"
+            android:label="@string/widget_name_countdown"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/shiguangschedule_countdown_widget" />
+        </receiver>
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

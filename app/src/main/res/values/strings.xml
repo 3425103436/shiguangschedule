@@ -24,6 +24,7 @@
     <string name="nav_today_schedule">今日课表</string>
     <string name="nav_course_schedule">课表</string>
     <string name="nav_settings">我的</string>
+    <string name="nav_ai_chat">AI</string>
     <string name="title_today_schedule">今日课表</string>
     <string name="text_no_courses_today">今天没有课程</string>
     <string name="title_vacation_until_start">假期中（距离开学还有%1$s天）</string>
@@ -123,6 +124,8 @@
     <string name="widget_date_dayofweek_format">%1$s %2$s</string>
     <string name="widget_title_today">今天</string>
     <string name="widget_title_tomorrow">明天</string>
+    <string name="widget_name_countdown">下节课倒计时3x2</string>
+    <string name="widget_countdown_description">显示下一节课的倒计时、课程名称和教室位置</string>
     
     <!-- 通知设置 -->
     <string name="title_course_notification_settings">课程提醒设置</string>

@@ -1,23 +1,40 @@
 package com.xingheyuzhuan.shiguangschedule.ui.today
 
 import android.app.Application
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -30,6 +47,8 @@ import java.util.Locale
 import androidx.compose.ui.res.stringResource
 import com.xingheyuzhuan.shiguangschedule.R
 import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
+import kotlinx.coroutines.delay
+import java.time.Duration
 import java.time.format.FormatStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,18 +66,28 @@ fun TodayScheduleScreen(
 
     val semesterStatus by viewModel.semesterStatus.collectAsState()
     val todayCourses by viewModel.todayCourses.collectAsState()
-    // 1. 获取全局样式配置
     val gridStyle by viewModel.gridStyle.collectAsState()
-    // 2. 监测系统深色模式状态
     val isDark = isSystemInDarkTheme()
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.title_today_schedule)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+            LargeTopAppBar(
+                title = {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.title_today_schedule),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = semesterStatus,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
@@ -70,132 +99,292 @@ fun TodayScheduleScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp)
         ) {
             val today = LocalDate.now()
             val todayDateString = remember(today) {
                 today.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG))
             }
-
             val todayDayOfWeekString = remember(today) {
                 today.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
             }
 
-            Text(
-                text = "$todayDateString $todayDayOfWeekString",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = semesterStatus,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // 日期头部卡片
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .shadow(
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(16.dp),
+                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    ),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = todayDateString,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = todayDayOfWeekString,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                    ) {
+                        Text(
+                            text = "${todayCourses.size} 节课",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             if (todayCourses.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = stringResource(R.string.text_no_courses_today),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "🎉",
+                            fontSize = 48.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(R.string.text_no_courses_today),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "好好休息，享受今天吧",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
                 }
             } else {
                 val currentTime = LocalTime.now()
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
-                    todayCourses.forEach { course ->
-                        val isCourseFinished = remember(currentTime, course) {
-                            try {
-                                val courseEndTime = LocalTime.parse(course.endTime)
-                                currentTime.isAfter(courseEndTime)
-                            } catch (e: Exception) {
-                                false
-                            }
+                    itemsIndexed(
+                        items = todayCourses,
+                        key = { _, course -> "${course.name}_${course.startTime}" }
+                    ) { index, course ->
+                        // 逐个入场动画
+                        var visible by remember { mutableStateOf(false) }
+                        LaunchedEffect(Unit) {
+                            delay(index * 50L)
+                            visible = true
                         }
 
-                        // 3. 根据课程的 colorInt 获取对应的配色对
-                        val colorPair = gridStyle.courseColorMaps.getOrElse(course.colorInt) {
-                            ScheduleGridStyle.DEFAULT_COLOR_MAPS[0]
-                        }
-
-                        // 4. 根据当前深色/浅色模式选择颜色
-                        val baseColor = if (isDark) colorPair.dark else colorPair.light
-
-                        // 5. 计算卡片容器颜色（如果已结束，降低透明度）
-                        val cardColor = if (isCourseFinished) {
-                            baseColor.copy(alpha = 0.4f)
-                        } else {
-                            baseColor
-                        }
-
-                        // 计算文字颜色（深色模式下用白色，浅色通常用黑色或深色，取决于背景）
-                        val contentColor = if (isDark) Color.White else Color.Black
-
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = cardColor,
-                                contentColor = contentColor // 自动应用到卡片内的文字
-                            ),
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = if (isCourseFinished) 0.dp else 2.dp
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioLowBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                )
+                            ) + slideInVertically(
+                                initialOffsetY = { it / 3 },
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioLowBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                )
                             )
                         ) {
-                            Column(
-                                modifier = Modifier.padding(12.dp)
-                            ) {
-                                Text(
-                                    text = course.name,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        textDecoration = if (isCourseFinished) TextDecoration.LineThrough else TextDecoration.None
-                                    ),
-                                    fontWeight = FontWeight.Bold,
-                                    color = contentColor
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Start
-                                ) {
-                                    Text(
-                                        text = "${course.startTime} - ${course.endTime}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = contentColor
-                                    )
+                            val isCourseFinished = remember(currentTime, course) {
+                                try {
+                                    val courseEndTime = LocalTime.parse(course.endTime)
+                                    currentTime.isAfter(courseEndTime)
+                                } catch (e: Exception) {
+                                    false
+                                }
+                            }
 
-                                    course.position.takeIf { it.isNotBlank() }?.let { position ->
-                                        Text(" | ", style = MaterialTheme.typography.bodySmall, color = contentColor)
-                                        Text(
-                                            text = position,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = contentColor,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
+                            val isCurrentlyInClass = remember(currentTime, course) {
+                                try {
+                                    val courseStartTime = LocalTime.parse(course.startTime)
+                                    val courseEndTime = LocalTime.parse(course.endTime)
+                                    currentTime in courseStartTime..courseEndTime
+                                } catch (e: Exception) {
+                                    false
+                                }
+                            }
+
+                            val colorPair = gridStyle.courseColorMaps.getOrElse(course.colorInt) {
+                                ScheduleGridStyle.DEFAULT_COLOR_MAPS[0]
+                            }
+                            val baseColor = if (isDark) colorPair.dark else colorPair.light
+                            val cardColor = when {
+                                isCourseFinished -> baseColor.copy(alpha = 0.35f)
+                                isCurrentlyInClass -> baseColor
+                                else -> baseColor.copy(alpha = 0.85f)
+                            }
+                            val contentColor = if (isDark) Color.White else Color.Black
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer {
+                                        // 已结束的课程稍微缩小，增加层次感
+                                        if (isCourseFinished) {
+                                            scaleX = 0.98f
+                                            scaleY = 0.98f
+                                            alpha = 0.75f
+                                        }
+                                    },
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = cardColor,
+                                    contentColor = contentColor
+                                ),
+                                elevation = CardDefaults.cardElevation(
+                                    defaultElevation = when {
+                                        isCurrentlyInClass -> 6.dp
+                                        isCourseFinished -> 0.dp
+                                        else -> 3.dp
+                                    }
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(14.dp)
+                                ) {
+                                    // 状态标签
+                                    if (isCurrentlyInClass) {
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = contentColor.copy(alpha = 0.15f),
+                                            modifier = Modifier.padding(bottom = 6.dp)
+                                        ) {
+                                            Text(
+                                                text = "正在上课",
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = contentColor
+                                            )
+                                        }
                                     }
 
-                                    course.teacher.takeIf { it.isNotBlank() }?.let { teacher ->
-                                        Text(" | ", style = MaterialTheme.typography.bodySmall, color = contentColor)
-                                        Text(
-                                            text = teacher,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = contentColor,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
+                                    // 课程名称
+                                    Text(
+                                        text = course.name,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            textDecoration = if (isCourseFinished) TextDecoration.LineThrough else TextDecoration.None
+                                        ),
+                                        fontWeight = FontWeight.Bold,
+                                        color = contentColor,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    // 时间行
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(vertical = 1.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Schedule,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp),
+                                            tint = contentColor.copy(alpha = 0.7f)
                                         )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "${course.startTime} - ${course.endTime}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = contentColor.copy(alpha = 0.8f)
+                                        )
+
+                                        // 倒计时提示
+                                        if (isCurrentlyInClass) {
+                                            try {
+                                                val endTime = LocalTime.parse(course.endTime)
+                                                val remaining = Duration.between(currentTime, endTime)
+                                                val mins = remaining.toMinutes()
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = "还剩 ${mins} 分钟",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = contentColor.copy(alpha = 0.6f)
+                                                )
+                                            } catch (_: Exception) {}
+                                        }
+                                    }
+
+                                    // 地点行
+                                    course.position.takeIf { it.isNotBlank() }?.let { position ->
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(vertical = 1.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.LocationOn,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(14.dp),
+                                                tint = contentColor.copy(alpha = 0.7f)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = position,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = contentColor.copy(alpha = 0.8f),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                    }
+
+                                    // 教师行
+                                    course.teacher.takeIf { it.isNotBlank() }?.let { teacher ->
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(vertical = 1.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Person,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(14.dp),
+                                                tint = contentColor.copy(alpha = 0.7f)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = teacher,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = contentColor.copy(alpha = 0.8f),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
                                     }
                                 }
                             }

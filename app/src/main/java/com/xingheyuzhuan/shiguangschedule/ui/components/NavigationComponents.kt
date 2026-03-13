@@ -3,6 +3,7 @@ package com.xingheyuzhuan.shiguangschedule.ui.components
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.ViewWeek
 import androidx.compose.material3.Icon
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material.icons.outlined.ViewWeek
 import androidx.compose.ui.res.stringResource
@@ -36,6 +38,7 @@ fun BottomNavigationBar(
     val navItems = listOf(
         stringResource(R.string.nav_today_schedule) to Screen.TodaySchedule.route,
         stringResource(R.string.nav_course_schedule) to Screen.CourseSchedule.route,
+        stringResource(R.string.nav_ai_chat) to Screen.AiChat.route,
         stringResource(R.string.nav_settings) to Screen.Settings.route
     )
 
@@ -59,7 +62,7 @@ fun BottomNavigationBar(
                                 saveState = true
                             }
                             launchSingleTop = true
-                            restoreState = false // 保持 false，确保课表页干净重载
+                            restoreState = if (route == Screen.AiChat.route) true else false
                         }
                     }
                 },
@@ -67,6 +70,7 @@ fun BottomNavigationBar(
                     val (selectedIcon, unselectedIcon) = when (route) {
                         Screen.TodaySchedule.route -> Icons.Filled.ViewAgenda to Icons.Outlined.ViewAgenda
                         Screen.CourseSchedule.route -> Icons.Filled.ViewWeek to Icons.Outlined.ViewWeek
+                        Screen.AiChat.route -> Icons.Filled.AutoAwesome to Icons.Outlined.AutoAwesome
                         Screen.Settings.route -> Icons.Filled.AccountCircle to Icons.Outlined.AccountCircle
                         else -> Icons.Filled.AccountCircle to Icons.Outlined.AccountCircle
                     }

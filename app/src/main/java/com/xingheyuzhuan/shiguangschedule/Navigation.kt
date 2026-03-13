@@ -73,4 +73,6 @@ sealed class Screen(val route: String) {
     }
 
     object StyleSettings : Screen("style_settings")
+
+    object AiChat : Screen("ai_chat")
 }

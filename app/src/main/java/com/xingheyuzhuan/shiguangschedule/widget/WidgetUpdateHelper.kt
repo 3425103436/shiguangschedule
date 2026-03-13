@@ -13,6 +13,8 @@ import com.xingheyuzhuan.shiguangschedule.widget.compact.CompactNativeProvider
 import com.xingheyuzhuan.shiguangschedule.widget.compact.CompactNativeRenderer
 import com.xingheyuzhuan.shiguangschedule.widget.double_days.DoubleDaysNativeProvider
 import com.xingheyuzhuan.shiguangschedule.widget.double_days.DoubleDaysNativeRenderer
+import com.xingheyuzhuan.shiguangschedule.widget.countdown.CountdownNativeProvider
+import com.xingheyuzhuan.shiguangschedule.widget.countdown.CountdownNativeRenderer
 import com.xingheyuzhuan.shiguangschedule.widget.large.LargeNativeProvider
 import com.xingheyuzhuan.shiguangschedule.widget.large.LargeNativeRenderer
 import com.xingheyuzhuan.shiguangschedule.widget.moderate.ModerateNativeProvider
@@ -92,7 +94,8 @@ suspend fun updateAllWidgets(context: Context) {
             CompactNativeProvider::class.java to CompactNativeRenderer::render,
             ModerateNativeProvider::class.java to ModerateNativeRenderer::render,
             DoubleDaysNativeProvider::class.java to DoubleDaysNativeRenderer::render,
-            LargeNativeProvider::class.java to LargeNativeRenderer::render
+            LargeNativeProvider::class.java to LargeNativeRenderer::render,
+            CountdownNativeProvider::class.java to CountdownNativeRenderer::render
         )
 
         // 5. 统一分发更新

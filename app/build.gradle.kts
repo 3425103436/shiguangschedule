@@ -150,6 +150,8 @@ dependencies {
     implementation(libs.protobuf.java.lite)
     implementation(libs.javax.inject)
     implementation(libs.androidx.appcompat)
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
