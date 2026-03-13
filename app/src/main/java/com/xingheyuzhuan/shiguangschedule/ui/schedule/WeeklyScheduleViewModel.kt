@@ -75,7 +75,7 @@ class WeeklyScheduleViewModel(
     private val appSettingsRepository: AppSettingsRepository,
     private val courseTableRepository: CourseTableRepository,
     private val timeSlotRepository: TimeSlotRepository,
-    private val styleSettingsRepository: StyleSettingsRepository
+    styleSettingsRepository: StyleSettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WeeklyScheduleUiState())
@@ -255,7 +255,7 @@ class WeeklyScheduleViewModel(
      * 合并并处理课程块。
      * 使用预解析的时间槽数据以提升性能。
      */
-    fun mergeCourses(
+    private fun mergeCourses(
         courses: List<CourseWithWeeks>,
         timeSlots: List<TimeSlot>,
         parsedSlots: List<ParsedTimeSlot> = preParseTimeSlots(timeSlots)
@@ -277,7 +277,7 @@ class WeeklyScheduleViewModel(
 
                 if (endScale - startScale < 0.5f) endScale = startScale + 0.5f
                 Triple(cw, startScale, endScale)
-            } catch (e: Exception) { null }
+            } catch (_: Exception) { null }
         }
 
         val result = mutableListOf<MergedCourseBlock>()
