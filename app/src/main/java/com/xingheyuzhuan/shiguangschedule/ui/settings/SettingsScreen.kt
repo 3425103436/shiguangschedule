@@ -1,6 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.MoreHoriz
@@ -53,8 +56,8 @@ import java.time.format.DateTimeParseException
 
 // 常量，用于统一间距和边距
 private val SETTING_PADDING = 16.dp
-private val SECTION_SPACING = 16.dp
-private val ITEM_SPACING = 16.dp
+private val SECTION_SPACING = 12.dp
+private val ITEM_SPACING = 4.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,9 +72,20 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.title_schedule_settings)) },
+                title = {
+                    Text(
+                        stringResource(R.string.title_schedule_settings),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                ),
                 scrollBehavior = scrollBehavior
             )
         },
@@ -115,7 +129,8 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = SETTING_PADDING),
+                    .padding(horizontal = SETTING_PADDING)
+                    .padding(vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)
             ) {
@@ -135,13 +150,6 @@ fun SettingsScreen(
                         onManualWeekClick = { showManualWeekDialog = true },
                         onFirstDayOfWeekClick = { showFirstDayOfWeekDialog = true },
                         onQuickActionsClick = { onNavigate(Destination.QuickActions) }
-                    )
-                }
-                item {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 4.dp,horizontal = 16.dp),
-                        thickness = 1.dp, // 设置分隔线的厚度
-                        color = MaterialTheme.colorScheme.outlineVariant
                     )
                 }
                 item {
@@ -219,16 +227,20 @@ private fun GeneralSettingsSection(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(SETTING_PADDING),
+            modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(ITEM_SPACING)
         ) {
             Text(
                 stringResource(R.string.section_title_general_settings),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
             )
 
             // 是否显示非本周课程开关
@@ -322,16 +334,20 @@ private fun GeneralSettingsSection(
 private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(SETTING_PADDING),
+            modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(ITEM_SPACING)
         ) {
             Text(
                 stringResource(R.string.section_title_advanced_features),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
             )
             // 课表导入/导出设置项
             SettingItem(
@@ -393,21 +409,41 @@ private fun SettingItem(
     subtitle: String,
     icon: ImageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
     onClick: (() -> Unit)? = null,
-    trailingContent: @Composable () -> Unit = { Icon(icon, contentDescription = null) }
+    trailingContent: @Composable () -> Unit = {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp)
+        )
+    }
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.36f),
+                shape = RoundedCornerShape(14.dp)
+            )
             .clickable(enabled = onClick != null) { onClick?.invoke() }
-            .padding(vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier
             .weight(1f)
             .padding(end = 8.dp)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
         trailingContent()
     }
