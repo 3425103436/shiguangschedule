@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.xingheyuzhuan.shiguangschedule.R
+import com.xingheyuzhuan.shiguangschedule.ui.components.liquidGlass
 
 @Composable
 fun GeneralSettingsCard(
@@ -31,11 +32,18 @@ fun GeneralSettingsCard(
         Spacer(Modifier.height(8.dp))
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                containerColor = androidx.compose.ui.graphics.Color.Transparent,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            modifier = Modifier.fillMaxWidth()
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier
+                .fillMaxWidth()
+                .liquidGlass(
+                    tint = MaterialTheme.colorScheme.primary,
+                    shape = MaterialTheme.shapes.large,
+                    shadowElevation = 3.dp
+                )
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 // 权限说明头部

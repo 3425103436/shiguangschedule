@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
@@ -35,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -223,18 +225,27 @@ fun CourseTablePickerCard(
     onCardClick: (CourseTable) -> Unit
 ) {
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()) }
+    val cardShape = RoundedCornerShape(18.dp)
+    val glassTint = when {
+        isSelected -> MaterialTheme.colorScheme.primary
+        isCurrentActive -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.surface
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .liquidGlass(
+                tint = glassTint,
+                shape = cardShape,
+                shadowElevation = if (isSelected) 4.dp else 1.dp
+            )
             .clickable { onCardClick(courseTable) },
+        shape = cardShape,
         colors = CardDefaults.cardColors(
-            containerColor = when {
-                isSelected -> MaterialTheme.colorScheme.primaryContainer
-                isCurrentActive -> MaterialTheme.colorScheme.tertiaryContainer
-                else -> MaterialTheme.colorScheme.surfaceVariant
-            }
+            containerColor = Color.Transparent
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Row(
