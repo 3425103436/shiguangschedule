@@ -64,25 +64,26 @@ data class ScheduleGridStyle(
         internal val DEFAULT_TIME_COLUMN_WIDTH = 40f
         internal val DEFAULT_DAY_HEADER_HEIGHT = 45f
         internal val DEFAULT_SECTION_HEIGHT = 70f
-        internal val DEFAULT_BLOCK_CORNER_RADIUS = 4f
-        internal val DEFAULT_BLOCK_OUTER_PADDING = 1f
-        internal val DEFAULT_BLOCK_INNER_PADDING = 4f
+        internal val DEFAULT_BLOCK_CORNER_RADIUS = 12f
+        internal val DEFAULT_BLOCK_OUTER_PADDING = 2f
+        internal val DEFAULT_BLOCK_INNER_PADDING = 6f
         internal val DEFAULT_BLOCK_ALPHA = 1f
         internal val DEFAULT_FONT_SCALE = 1f
 
+        // WakeUp 风格默认色板：低饱和浅色课程块，并为深色模式提供对应颜色。
         internal val DEFAULT_COLOR_MAPS = listOf(
-            DualColor(light = Color(0xFFFFCC99), dark = Color(0xFF663300)),
-            DualColor(light = Color(0xFFFFE699), dark = Color(0xFF664D00)),
-            DualColor(light = Color(0xFFE6FF99), dark = Color(0xFF4D6600)),
-            DualColor(light = Color(0xFFCCFF99), dark = Color(0xFF336600)),
-            DualColor(light = Color(0xFF99FFB3), dark = Color(0xFF00661A)),
-            DualColor(light = Color(0xFF99FFE6), dark = Color(0xFF00664D)),
-            DualColor(light = Color(0xFF99FFFF), dark = Color(0xFF006666)),
-            DualColor(light = Color(0xFF99E6FF), dark = Color(0xFF004D66)),
-            DualColor(light = Color(0xFFB399FF), dark = Color(0xFF1A0066)),
-            DualColor(light = Color(0xFFFF99E6), dark = Color(0xFF66004D)),
-            DualColor(light = Color(0xFFFF99CC), dark = Color(0xFF660033)),
-            DualColor(light = Color(0xFFFF99B3), dark = Color(0xFF66001A)),
+            DualColor(light = Color(0xFFB9C8FF), dark = Color(0xFF34446F)),
+            DualColor(light = Color(0xFFD0C1FF), dark = Color(0xFF493F6E)),
+            DualColor(light = Color(0xFFFFC8D9), dark = Color(0xFF6A3B4C)),
+            DualColor(light = Color(0xFFFFD6B8), dark = Color(0xFF6C4935)),
+            DualColor(light = Color(0xFFFFE7A6), dark = Color(0xFF665A2F)),
+            DualColor(light = Color(0xFFDCEEB5), dark = Color(0xFF455D34)),
+            DualColor(light = Color(0xFFBFE9D5), dark = Color(0xFF315B4D)),
+            DualColor(light = Color(0xFFBFE6F2), dark = Color(0xFF315767)),
+            DualColor(light = Color(0xFFBDD8FF), dark = Color(0xFF334D70)),
+            DualColor(light = Color(0xFFDCCFFF), dark = Color(0xFF514674)),
+            DualColor(light = Color(0xFFFFD0E8), dark = Color(0xFF633D55)),
+            DualColor(light = Color(0xFFE5DACB), dark = Color(0xFF564B40)),
         )
 
         /**
