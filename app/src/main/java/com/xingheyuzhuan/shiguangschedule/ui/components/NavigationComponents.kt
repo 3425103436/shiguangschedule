@@ -1,6 +1,8 @@
 package com.xingheyuzhuan.shiguangschedule.ui.components
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ViewAgenda
@@ -11,6 +13,7 @@ import androidx.compose.material.icons.outlined.ViewWeek
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,12 +23,7 @@ import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.R
 
 /**
- * 导航 3 版本的底部导航栏
- * @param currentDestination 当前所在的 Destination 对象
- * @param onTabSelected 当用户点击 Tab 时的回调
- * @param isTransparent 是否开启透明模式（用于课表背景图展示）
- * @param contentColor 自定义内容颜色（通常来自课表样式的文字颜色）
- * @param modifier 外部传入的修饰符，用于支持折叠动画同步
+ * WakeUp 风格的底部导航栏：悬浮胶囊、低对比度背景和轻量选中指示器。
  */
 @Composable
 fun BottomNavigationBar(
@@ -35,26 +33,33 @@ fun BottomNavigationBar(
     isTransparent: Boolean = false,
     contentColor: Color? = null
 ) {
-    // 定义底部三个主入口及其对应的文本和图标
     val navItems = listOf(
         Triple(stringResource(R.string.nav_today_schedule), Destination.TodaySchedule, Icons.Filled.ViewAgenda to Icons.Outlined.ViewAgenda),
         Triple(stringResource(R.string.nav_course_schedule), Destination.CourseSchedule, Icons.Filled.ViewWeek to Icons.Outlined.ViewWeek),
         Triple(stringResource(R.string.nav_settings), Destination.Settings, Icons.Filled.AccountCircle to Icons.Outlined.AccountCircle)
     )
 
-    val iconSize = 24.dp
-    val textSize = 12.sp
-
     val finalContentColor = contentColor ?: MaterialTheme.colorScheme.onSurface
-    val finalSubTextColor = finalContentColor.copy(alpha = 0.7f)
+    val finalSubTextColor = finalContentColor.copy(alpha = 0.58f)
+    val pillShape = RoundedCornerShape(28.dp)
 
     NavigationBar(
-        containerColor = if (isTransparent) Color.Transparent else MaterialTheme.colorScheme.surface,
-        tonalElevation = if (isTransparent) 0.dp else 3.dp,
+        containerColor = if (isTransparent) {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.78f)
+        } else {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+        },
+        tonalElevation = 0.dp,
         modifier = modifier
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .clip(pillShape)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f),
+                shape = pillShape
+            )
     ) {
         navItems.forEach { (label, destination, icons) ->
-            // 检查当前目的地类型是否匹配
             val isSelected = currentDestination::class == destination::class
 
             NavigationBarItem(
@@ -66,23 +71,37 @@ fun BottomNavigationBar(
                 },
                 icon = {
                     val (selectedIcon, unselectedIcon) = icons
-                    val icon = if (isSelected) selectedIcon else unselectedIcon
                     Icon(
-                        imageVector = icon,
+                        imageVector = if (isSelected) selectedIcon else unselectedIcon,
                         contentDescription = label,
-                        modifier = Modifier.size(iconSize)
+                        modifier = Modifier.size(22.dp)
                     )
                 },
-                label = { Text(label, fontSize = textSize) },
+                label = { Text(label, fontSize = 11.sp) },
                 colors = NavigationBarItemDefaults.colors(
-                    // 透明模式下隐藏指示器背景（那个椭圆），纯色模式下保留（方便识别）
-                    indicatorColor = if (isTransparent) Color.Transparent else MaterialTheme.colorScheme.secondaryContainer,
-
-                    // 只要自定义了颜色 (contentColor != null)，就应用 finalContentColor
-                    selectedIconColor = if (contentColor != null) finalContentColor else MaterialTheme.colorScheme.onSecondaryContainer,
-                    selectedTextColor = if (contentColor != null) finalContentColor else MaterialTheme.colorScheme.onSurface,
-                    unselectedIconColor = if (contentColor != null) finalSubTextColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = if (contentColor != null) finalSubTextColor else MaterialTheme.colorScheme.onSurfaceVariant
+                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                        alpha = if (isSelected) 1f else 0f
+                    ),
+                    selectedIconColor = if (contentColor != null) {
+                        finalContentColor
+                    } else {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    },
+                    selectedTextColor = if (contentColor != null) {
+                        finalContentColor
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    unselectedIconColor = if (contentColor != null) {
+                        finalSubTextColor
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    unselectedTextColor = if (contentColor != null) {
+                        finalSubTextColor
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                 )
             )
         }
