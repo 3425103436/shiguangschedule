@@ -63,7 +63,7 @@ fun ScheduleGrid(
         val maxGridSections = if (is24HourMode) 24 else viewState.timeSlots.size
 
         val totalGridHeight = style.sectionHeight * maxGridSections
-        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.08f)
         val strokeWidthPx = 1f
 
         val singleSchedulables = remember(viewState.mergedCourses, viewState.firstDayOfWeek, viewState.showWeekends) {
