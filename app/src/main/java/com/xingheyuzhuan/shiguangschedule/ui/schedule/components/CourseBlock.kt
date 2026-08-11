@@ -90,7 +90,7 @@ fun CourseBlock(
     }
 
     // 边框样式配置
-    val borderColor = if (isFloating) Color(0xFF2196F3) else MaterialTheme.colorScheme.outline
+    val borderColor = if (isFloating) Color(0xFF6475E8) else MaterialTheme.colorScheme.outline
     val borderWidth = if (isFloating) 2.dp else 1.dp
     val borderAlpha = if (isFloating) 1.0f else style.courseBlockAlpha
     val shape = RoundedCornerShape(style.courseBlockCornerRadius)
@@ -119,16 +119,16 @@ fun CourseBlock(
     val verticalArrangement = if (style.textAlignCenterVertical) Arrangement.Center else Arrangement.Top
     val textAlign = if (style.textAlignCenterHorizontal) TextAlign.Center else TextAlign.Start
 
-    // 选中捏起时，增加三维物理阴影
-    val floatingShadowModifier = if (isFloating) {
-        Modifier.shadow(elevation = 8.dp, shape = shape, clip = false)
-    } else {
-        Modifier
-    }
+    // WakeUp 风格：普通课程块使用极轻阴影，长按编辑时提高层级。
+    val shadowModifier = Modifier.shadow(
+        elevation = if (isFloating) 8.dp else 1.dp,
+        shape = shape,
+        clip = false
+    )
 
     Box(
         modifier = modifier
-            .then(floatingShadowModifier)
+            .then(shadowModifier)
             .fillMaxSize()
             .then(borderModifier)
             .clip(shape)
