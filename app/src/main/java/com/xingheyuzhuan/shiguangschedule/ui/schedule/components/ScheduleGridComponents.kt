@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.PlatformTextStyle
@@ -170,7 +171,14 @@ fun DayHeader(
         Modifier
             .fillMaxWidth()
             .height(style.dayHeaderHeight)
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.74f))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.68f),
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.28f)
+                    )
+                )
+            )
     ) {
         val shouldShowDate = !style.hideDateUnderDay && maxHeight >= 42.dp
 
@@ -280,7 +288,7 @@ fun DayHeader(
                                         color = if (isToday) {
                                             MaterialTheme.colorScheme.primary
                                         } else {
-                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+                                            Color.Transparent
                                         },
                                         shape = CircleShape
                                     ),

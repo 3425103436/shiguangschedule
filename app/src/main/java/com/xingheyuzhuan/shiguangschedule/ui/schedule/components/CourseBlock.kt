@@ -13,9 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -33,6 +31,7 @@ import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseWithWeeks
 import com.xingheyuzhuan.shiguangschedule.data.db.main.TimeSlot
 import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.BorderTypeProto
 import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.ScheduleModeProto
+import com.xingheyuzhuan.shiguangschedule.ui.components.liquidGlass
 import com.xingheyuzhuan.shiguangschedule.ui.theme.LocalIsDarkTheme
 
 @Composable
@@ -119,20 +118,16 @@ fun CourseBlock(
     val verticalArrangement = if (style.textAlignCenterVertical) Arrangement.Center else Arrangement.Top
     val textAlign = if (style.textAlignCenterHorizontal) TextAlign.Center else TextAlign.Start
 
-    // WakeUp 风格：普通课程块使用极轻阴影，长按编辑时提高层级。
-    val shadowModifier = Modifier.shadow(
-        elevation = if (isFloating) 8.dp else 1.dp,
-        shape = shape,
-        clip = false
-    )
-
     Box(
         modifier = modifier
-            .then(shadowModifier)
             .fillMaxSize()
+            .liquidGlass(
+                tint = blockColor,
+                shape = shape,
+                emphasized = isFloating,
+                shadowElevation = if (isFloating) 9.dp else 2.dp
+            )
             .then(borderModifier)
-            .clip(shape)
-            .background(color = blockColor)
     ) {
         // 课程文字内容容器
         Column(

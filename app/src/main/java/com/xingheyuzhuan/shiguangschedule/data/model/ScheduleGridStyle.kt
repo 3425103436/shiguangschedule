@@ -67,23 +67,23 @@ data class ScheduleGridStyle(
         internal val DEFAULT_BLOCK_CORNER_RADIUS = 12f
         internal val DEFAULT_BLOCK_OUTER_PADDING = 2f
         internal val DEFAULT_BLOCK_INNER_PADDING = 6f
-        internal val DEFAULT_BLOCK_ALPHA = 1f
+        internal val DEFAULT_BLOCK_ALPHA = 0.96f
         internal val DEFAULT_FONT_SCALE = 1f
 
-        // WakeUp 风格默认色板：低饱和浅色课程块，并为深色模式提供对应颜色。
+        // iOS Liquid Glass 默认色板：颜色只负责极浅的玻璃折射，不再作为实心底色。
         internal val DEFAULT_COLOR_MAPS = listOf(
-            DualColor(light = Color(0xFFB9C8FF), dark = Color(0xFF34446F)),
-            DualColor(light = Color(0xFFD0C1FF), dark = Color(0xFF493F6E)),
-            DualColor(light = Color(0xFFFFC8D9), dark = Color(0xFF6A3B4C)),
-            DualColor(light = Color(0xFFFFD6B8), dark = Color(0xFF6C4935)),
-            DualColor(light = Color(0xFFFFE7A6), dark = Color(0xFF665A2F)),
-            DualColor(light = Color(0xFFDCEEB5), dark = Color(0xFF455D34)),
-            DualColor(light = Color(0xFFBFE9D5), dark = Color(0xFF315B4D)),
-            DualColor(light = Color(0xFFBFE6F2), dark = Color(0xFF315767)),
-            DualColor(light = Color(0xFFBDD8FF), dark = Color(0xFF334D70)),
-            DualColor(light = Color(0xFFDCCFFF), dark = Color(0xFF514674)),
-            DualColor(light = Color(0xFFFFD0E8), dark = Color(0xFF633D55)),
-            DualColor(light = Color(0xFFE5DACB), dark = Color(0xFF564B40)),
+            DualColor(light = Color(0xFFE9EEFF), dark = Color(0xFF405176)),
+            DualColor(light = Color(0xFFF0EBFF), dark = Color(0xFF514873)),
+            DualColor(light = Color(0xFFFFEAF0), dark = Color(0xFF704654)),
+            DualColor(light = Color(0xFFFFF0E5), dark = Color(0xFF72513E)),
+            DualColor(light = Color(0xFFFFF6D9), dark = Color(0xFF6A603C)),
+            DualColor(light = Color(0xFFF1F7DF), dark = Color(0xFF4D623D)),
+            DualColor(light = Color(0xFFE5F6EF), dark = Color(0xFF386153)),
+            DualColor(light = Color(0xFFE5F4F8), dark = Color(0xFF38606D)),
+            DualColor(light = Color(0xFFE7F0FF), dark = Color(0xFF3C5576)),
+            DualColor(light = Color(0xFFF1ECFF), dark = Color(0xFF584D78)),
+            DualColor(light = Color(0xFFFFECF5), dark = Color(0xFF6B465C)),
+            DualColor(light = Color(0xFFF5F0E9), dark = Color(0xFF5D5347)),
         )
 
         /**

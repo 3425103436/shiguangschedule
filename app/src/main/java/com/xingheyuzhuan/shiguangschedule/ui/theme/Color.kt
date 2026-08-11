@@ -3,15 +3,15 @@ package com.xingheyuzhuan.shiguangschedule.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // WakeUp 风格的基础色板：低饱和、柔和、适合长时间查看课表。
-val WakeUpLightBackground = Color(0xFFF7F8FC)
+val WakeUpLightBackground = Color(0xFFF4F6FA)
 val WakeUpLightSurface = Color(0xFFFFFFFF)
-val WakeUpLightSurfaceVariant = Color(0xFFF0F1F7)
-val WakeUpLightOnBackground = Color(0xFF1D1E24)
-val WakeUpLightOnSurface = Color(0xFF25262D)
-val WakeUpLightOnSurfaceVariant = Color(0xFF6F7280)
-val WakeUpLightSecondaryContainer = Color(0xFFE9EBFF)
+val WakeUpLightSurfaceVariant = Color(0xFFF7F8FC)
+val WakeUpLightOnBackground = Color(0xFF1C1D24)
+val WakeUpLightOnSurface = Color(0xFF25262C)
+val WakeUpLightOnSurfaceVariant = Color(0xFF747886)
+val WakeUpLightSecondaryContainer = Color(0xFFF0F2FF)
 val WakeUpLightOnSecondaryContainer = Color(0xFF313A72)
-val WakeUpLightOutline = Color(0xFFD9DBE5)
+val WakeUpLightOutline = Color(0xFFE7E9F0)
 
 val WakeUpDarkBackground = Color(0xFF15161B)
 val WakeUpDarkSurface = Color(0xFF1E2027)

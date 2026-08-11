@@ -18,8 +18,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +41,8 @@ import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.R
 import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
 import com.xingheyuzhuan.shiguangschedule.ui.components.BottomNavigationBar
+import com.xingheyuzhuan.shiguangschedule.ui.components.LiquidGlassBackdrop
+import com.xingheyuzhuan.shiguangschedule.ui.components.liquidGlass
 import com.xingheyuzhuan.shiguangschedule.ui.theme.LocalIsDarkTheme
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -61,35 +61,40 @@ fun TodayScheduleScreen(
     val gridStyle by viewModel.gridStyle.collectAsState()
     val isDark = LocalIsDarkTheme.current
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.title_today_schedule),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+    Box(modifier = Modifier.fillMaxSize()) {
+        LiquidGlassBackdrop(modifier = Modifier.fillMaxSize())
+
+        Scaffold(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.title_today_schedule),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.32f),
+                        scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.56f)
                     )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
                 )
-            )
-        },
-        bottomBar = {
-            BottomNavigationBar(
-                currentDestination = Destination.TodaySchedule,
-                onTabSelected = { dest -> onNavigate(dest) }
-            )
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            when (val state = uiState) {
-                is TodayUiState.Loading -> { /* 可放置圆圈加载 */ }
-                is TodayUiState.Success -> {
-                    TodayContent(state, gridStyle, isDark)
+            },
+            bottomBar = {
+                BottomNavigationBar(
+                    currentDestination = Destination.TodaySchedule,
+                    onTabSelected = { dest -> onNavigate(dest) },
+                    isTransparent = true
+                )
+            }
+        ) { innerPadding ->
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                when (val state = uiState) {
+                    is TodayUiState.Loading -> { /* 可放置圆圈加载 */ }
+                    is TodayUiState.Success -> {
+                        TodayContent(state, gridStyle, isDark)
+                    }
                 }
             }
         }
@@ -157,15 +162,15 @@ fun TodayContent(
             TodayStatus.Normal -> stringResource(R.string.title_current_week, state.weekIndex.toString())
         }
 
-        Card(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp),
-            shape = RoundedCornerShape(22.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                .padding(top = 4.dp)
+                .liquidGlass(
+                    tint = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(22.dp),
+                    shadowElevation = 4.dp
+                )
         ) {
             Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
                 Text(
@@ -275,9 +280,15 @@ fun CourseTimelineItem(
         Spacer(modifier = Modifier.width(10.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Card(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .liquidGlass(
+                        tint = themeColor,
+                        shape = cardShape,
+                        emphasized = isOngoing,
+                        shadowElevation = if (isOngoing) 8.dp else 3.dp
+                    )
                     .then(
                         if (isOngoing) {
                             Modifier.border(
@@ -288,14 +299,7 @@ fun CourseTimelineItem(
                         } else {
                             Modifier
                         }
-                    ),
-                colors = CardDefaults.cardColors(
-                    containerColor = themeColor.copy(alpha = if (isDark) 0.78f else 0.92f)
-                ),
-                shape = cardShape,
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = if (isOngoing) 3.dp else 1.dp
-                )
+                    )
             ) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
                     Text(

@@ -1,8 +1,18 @@
 package com.xingheyuzhuan.shiguangschedule.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -11,8 +21,11 @@ import androidx.compose.material.icons.filled.ViewWeek
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material.icons.outlined.ViewWeek
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -24,7 +37,7 @@ import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.R
 
 /**
- * WakeUp 风格的底部导航栏：悬浮胶囊、低对比度背景和轻量选中指示器。
+ * iOS Liquid Glass 风格底部导航：低高度悬浮玻璃胶囊，选中项使用内层透明玻璃。
  */
 @Composable
 fun BottomNavigationBar(
@@ -41,70 +54,75 @@ fun BottomNavigationBar(
     )
 
     val finalContentColor = contentColor ?: MaterialTheme.colorScheme.onSurface
-    val finalSubTextColor = finalContentColor.copy(alpha = 0.58f)
-    val pillShape = RoundedCornerShape(28.dp)
+    val finalSubTextColor = finalContentColor.copy(alpha = 0.52f)
+    val pillShape = RoundedCornerShape(30.dp)
 
-    NavigationBar(
-        containerColor = if (isTransparent) {
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.78f)
-        } else {
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
-        },
-        tonalElevation = 0.dp,
+    Box(
         modifier = modifier
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .clip(pillShape)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f),
-                shape = pillShape
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp, vertical = 9.dp)
+            .height(66.dp)
+            .liquidGlass(
+                tint = if (isTransparent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                shape = pillShape,
+                shadowElevation = 10.dp
             )
+            .padding(6.dp)
     ) {
-        navItems.forEach { (label, destination, icons) ->
-            val isSelected = currentDestination::class == destination::class
+        Row(modifier = Modifier.fillMaxSize()) {
+            navItems.forEach { (label, destination, icons) ->
+                val isSelected = currentDestination::class == destination::class
+                val itemShape = RoundedCornerShape(24.dp)
 
-            NavigationBarItem(
-                selected = isSelected,
-                onClick = {
-                    if (!isSelected) {
-                        onTabSelected(destination)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(itemShape)
+                        .background(
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.46f)
+                            } else {
+                                Color.Transparent
+                            },
+                            shape = itemShape
+                        )
+                        .then(
+                            if (isSelected) {
+                                Modifier.border(
+                                    width = 1.dp,
+                                    color = Color.White.copy(alpha = 0.52f),
+                                    shape = itemShape
+                                )
+                            } else {
+                                Modifier
+                            }
+                        )
+                        .clickable {
+                            if (!isSelected) onTabSelected(destination)
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        val (selectedIcon, unselectedIcon) = icons
+                        Icon(
+                            imageVector = if (isSelected) selectedIcon else unselectedIcon,
+                            contentDescription = label,
+                            modifier = Modifier.size(21.dp),
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else finalSubTextColor
+                        )
                     }
-                },
-                icon = {
-                    val (selectedIcon, unselectedIcon) = icons
-                    Icon(
-                        imageVector = if (isSelected) selectedIcon else unselectedIcon,
-                        contentDescription = label,
-                        modifier = Modifier.size(22.dp)
+                    Text(
+                        text = label,
+                        fontSize = 10.sp,
+                        color = if (isSelected) finalContentColor else finalSubTextColor,
+                        modifier = Modifier.padding(bottom = 5.dp, top = 2.dp)
                     )
-                },
-                label = { Text(label, fontSize = 11.sp) },
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                        alpha = if (isSelected) 1f else 0f
-                    ),
-                    selectedIconColor = if (contentColor != null) {
-                        finalContentColor
-                    } else {
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                    },
-                    selectedTextColor = if (contentColor != null) {
-                        finalContentColor
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                    unselectedIconColor = if (contentColor != null) {
-                        finalSubTextColor
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    unselectedTextColor = if (contentColor != null) {
-                        finalSubTextColor
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
-            )
+                }
+            }
         }
     }
 }
