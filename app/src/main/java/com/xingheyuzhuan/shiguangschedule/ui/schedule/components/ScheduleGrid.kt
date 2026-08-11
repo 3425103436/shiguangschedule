@@ -44,7 +44,7 @@ fun ScheduleGrid(
     style: ScheduleGridStyleComposed,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize().padding(horizontal = 4.dp)) {
         val density = LocalDensity.current
 
         LaunchedEffect(viewState.mergedCourses) {
@@ -53,7 +53,7 @@ fun ScheduleGrid(
         }
 
         val pageTextColor = style.pageTextColor ?: MaterialTheme.colorScheme.onSurface
-        val pageSubTextColor = pageTextColor.copy(alpha = 0.7f)
+        val pageSubTextColor = pageTextColor.copy(alpha = 0.58f)
         val weekDays = stringArrayResource(R.array.week_days_short_names).toList()
         val reorderedWeekDays = rearrangeDays(weekDays, viewState.firstDayOfWeek)
         val displayDays = if (viewState.showWeekends) reorderedWeekDays else reorderedWeekDays.take(5)
