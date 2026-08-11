@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,6 +32,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -101,9 +104,20 @@ fun StyleSettingsScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(R.string.item_personalization), style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.item_personalization),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.a11y_back))
@@ -119,7 +133,7 @@ fun StyleSettingsScreen(
                 val density = LocalDensity.current
                 val containerSize = LocalWindowInfo.current.containerSize
                 val windowWidthDp = with(density) { containerSize.width.toDp() }
-                Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)).horizontalScroll(rememberScrollState()).pointerInput(Unit) { awaitPointerEventScope { while (true) { awaitPointerEvent() } } }) {
+                Box(modifier = modifier.background(MaterialTheme.colorScheme.background).padding(8.dp).horizontalScroll(rememberScrollState()).pointerInput(Unit) { awaitPointerEventScope { while (true) { awaitPointerEvent() } } }) {
                     Box(modifier = Modifier.requiredWidth(windowWidthDp)) {
                         ScheduleGridContent(currentStyle, demoUiState)
                     }
@@ -129,7 +143,12 @@ fun StyleSettingsScreen(
             if (isLandscape) {
                 Row(modifier = contentModifier) {
                     previewContent(Modifier.fillMaxHeight().weight(0.4f))
-                    Card(modifier = Modifier.fillMaxHeight().weight(0.6f), shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)) {
+                    Card(
+                        modifier = Modifier.fillMaxHeight().weight(0.6f),
+                        shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
                         SettingsListContent(
                             currentStyle = currentStyle,
                             viewModel = viewModel,
@@ -146,7 +165,12 @@ fun StyleSettingsScreen(
             } else {
                 Column(modifier = contentModifier) {
                     previewContent(Modifier.fillMaxWidth().weight(0.45f))
-                    Card(modifier = Modifier.fillMaxWidth().weight(0.55f), shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().weight(0.55f),
+                        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
                         SettingsListContent(
                             currentStyle = currentStyle,
                             viewModel = viewModel,
