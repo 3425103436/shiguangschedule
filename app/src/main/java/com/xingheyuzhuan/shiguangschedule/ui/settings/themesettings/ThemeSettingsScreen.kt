@@ -9,6 +9,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -40,9 +41,20 @@ fun ThemeSettingsScreen(
     val settings = uiState.appSettings
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.theme_settings_title)) },
+                title = {
+                    Text(
+                        stringResource(R.string.theme_settings_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -60,7 +72,7 @@ fun ThemeSettingsScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // 主题模式选择
             SectionHeader(stringResource(R.string.theme_mode_label))
@@ -133,8 +145,8 @@ private fun ColorPickerItem(
 
     Surface(
         onClick = { showSheet = true },
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -220,8 +232,8 @@ private fun DynamicColorToggle(
 ) {
     Surface(
         onClick = { onEnabledChange(!enabled) },
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
