@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.WindowCompat
 import com.xingheyuzhuan.shiguangschedule.data.model.AppSettingsModel
 import com.xingheyuzhuan.shiguangschedule.data.model.AppThemeMode
 
@@ -53,7 +53,10 @@ fun ShiguangScheduleTheme(
 }
 
 /**
- * 核心主题实现函数
+ * 核心主题实现函数。
+ *
+ * 保留动态颜色开关，同时固定背景、表面和文字层级，让课表主体保持
+ * WakeUp 风格的柔和层次；用户仍然可以通过系统动态颜色改变强调色。
  */
 @Composable
 fun ShiguangScheduleTheme(
@@ -66,14 +69,53 @@ fun ShiguangScheduleTheme(
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            val systemScheme = if (darkTheme) {
+                dynamicDarkColorScheme(context)
+            } else {
+                dynamicLightColorScheme(context)
+            }
+
+            systemScheme.copy(
+                background = if (darkTheme) WakeUpDarkBackground else WakeUpLightBackground,
+                onBackground = if (darkTheme) WakeUpDarkOnBackground else WakeUpLightOnBackground,
+                surface = if (darkTheme) WakeUpDarkSurface else WakeUpLightSurface,
+                onSurface = if (darkTheme) WakeUpDarkOnSurface else WakeUpLightOnSurface,
+                surfaceVariant = if (darkTheme) WakeUpDarkSurfaceVariant else WakeUpLightSurfaceVariant,
+                onSurfaceVariant = if (darkTheme) WakeUpDarkOnSurfaceVariant else WakeUpLightOnSurfaceVariant,
+                outline = if (darkTheme) WakeUpDarkOutline else WakeUpLightOutline
+            )
         }
 
         darkTheme -> {
-            darkColorScheme(primary = customDarkPrimary)
+            darkColorScheme(
+                primary = customDarkPrimary,
+                onPrimary = WakeUpDarkBackground,
+                background = WakeUpDarkBackground,
+                onBackground = WakeUpDarkOnBackground,
+                surface = WakeUpDarkSurface,
+                onSurface = WakeUpDarkOnSurface,
+                surfaceVariant = WakeUpDarkSurfaceVariant,
+                onSurfaceVariant = WakeUpDarkOnSurfaceVariant,
+                secondaryContainer = WakeUpDarkSecondaryContainer,
+                onSecondaryContainer = WakeUpDarkOnSecondaryContainer,
+                outline = WakeUpDarkOutline
+            )
         }
+
         else -> {
-            lightColorScheme(primary = customLightPrimary)
+            lightColorScheme(
+                primary = customLightPrimary,
+                onPrimary = Color.White,
+                background = WakeUpLightBackground,
+                onBackground = WakeUpLightOnBackground,
+                surface = WakeUpLightSurface,
+                onSurface = WakeUpLightOnSurface,
+                surfaceVariant = WakeUpLightSurfaceVariant,
+                onSurfaceVariant = WakeUpLightOnSurfaceVariant,
+                secondaryContainer = WakeUpLightSecondaryContainer,
+                onSecondaryContainer = WakeUpLightOnSecondaryContainer,
+                outline = WakeUpLightOutline
+            )
         }
     }
 
