@@ -147,7 +147,7 @@ fun WeeklyScheduleScreen(
 
 
     val customTextColor = composedStyle.pageTextColor ?: MaterialTheme.colorScheme.onSurface
-    val customSubTextColor = customTextColor.copy(alpha = 0.7f)
+    val customSubTextColor = customTextColor.copy(alpha = 0.58f)
 
     val displayTitle = when {
         !uiState.isSemesterSet || uiState.semesterStartDate == null -> {
@@ -180,7 +180,11 @@ fun WeeklyScheduleScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
-            containerColor = Color.Transparent,
+            containerColor = if (composedStyle.backgroundImagePath.isEmpty()) {
+                MaterialTheme.colorScheme.background
+            } else {
+                Color.Transparent
+            },
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
@@ -198,15 +202,15 @@ fun WeeklyScheduleScreen(
                         ) {
                             Text(
                                 text = displayTitle,
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium,
                                 color = customTextColor
                             )
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
                                 contentDescription = null,
                                 modifier = Modifier
-                                    .size(20.dp)
-                                    .offset(y = (-4).dp),
+                                    .size(18.dp)
+                                    .offset(y = (-2).dp),
                                 tint = customSubTextColor
                             )
                         }
@@ -221,8 +225,16 @@ fun WeeklyScheduleScreen(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.Transparent,
+                        containerColor = if (composedStyle.backgroundImagePath.isEmpty()) {
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.96f)
+                        } else {
+                            Color.Transparent
+                        },
+                        scrolledContainerColor = if (composedStyle.backgroundImagePath.isEmpty()) {
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+                        } else {
+                            Color.Transparent
+                        },
                     ),
                     scrollBehavior = scrollBehavior
                 )
