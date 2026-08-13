@@ -53,7 +53,7 @@ fun ScheduleGrid(
         }
 
         val pageTextColor = style.pageTextColor ?: MaterialTheme.colorScheme.onSurface
-        val pageSubTextColor = pageTextColor.copy(alpha = 0.7f)
+        val pageSubTextColor = pageTextColor.copy(alpha = 0.58f)
         val weekDays = stringArrayResource(R.array.week_days_short_names).toList()
         val reorderedWeekDays = rearrangeDays(weekDays, viewState.firstDayOfWeek)
         val displayDays = if (viewState.showWeekends) reorderedWeekDays else reorderedWeekDays.take(5)
@@ -63,7 +63,7 @@ fun ScheduleGrid(
         val maxGridSections = if (is24HourMode) 24 else viewState.timeSlots.size
 
         val totalGridHeight = style.sectionHeight * maxGridSections
-        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.16f)
         val strokeWidthPx = 1f
 
         val singleSchedulables = remember(viewState.mergedCourses, viewState.firstDayOfWeek, viewState.showWeekends) {
@@ -238,7 +238,7 @@ fun ScheduleGrid(
                                                             val currentAbsoluteX = initialX + state.bodyDragOffsetX
                                                             val blockWidth = cellWidth / item.subColumnCount
 
-                                                            val strictThresholdPx = with(density) { (-6.18).dp.toPx() }
+                                                            val strictThresholdPx = with(density) { 6.18.dp.toPx() }
 
                                                             val touchLeftEdge = currentAbsoluteX <= strictThresholdPx
                                                             val touchRightEdge = (currentAbsoluteX + blockWidth) >= (state.gridWidthPx - strictThresholdPx)

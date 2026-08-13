@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.xingheyuzhuan.shiguangschedule.R
 import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseWithWeeks
+import com.xingheyuzhuan.shiguangschedule.ui.components.liquidGlass
 
 @Composable
 fun FloatingCourseBar(
@@ -47,9 +48,11 @@ fun FloatingCourseBar(
         floatingCourse?.let { cw ->
             Row(
                 modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = CircleShape
+                    .liquidGlass(
+                        tint = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape,
+                        emphasized = true,
+                        shadowElevation = 8.dp
                     )
                     .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 8.dp),
                 verticalAlignment = Alignment.CenterVertically

@@ -1,0 +1,80 @@
+name: UI Test APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ui/wakeup-redesign
+    paths:
+      - app/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - gradle/**
+      - gradlew
+      - .github/workflows/ui-test-apk.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-debug-apk:
+    name: Build developer debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout UI branch
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare offline school resources
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          rm -rf app/src/main/assets/offline_repo/index
+          rm -rf app/src/main/assets/offline_repo/schools
+          mkdir -p app/src/main/assets/offline_repo/index
+          mkdir -p app/src/main/assets/offline_repo/schools
+
+          INDEX_DIR="$(mktemp -d)"
+          git clone --depth 1 --branch index-pb-release \
+            "https://x-access-token:${GH_TOKEN}@github.com/XingHeYuZhuan/shiguang_warehouse.git" \
+            "$INDEX_DIR"
+          cp "$INDEX_DIR/school_index.pb" app/src/main/assets/offline_repo/index/
+          rm -rf "$INDEX_DIR"
+
+          RESOURCE_DIR="$(mktemp -d)"
+          git clone --depth 1 --filter=blob:none --sparse \
+            "https://x-access-token:${GH_TOKEN}@github.com/XingHeYuZhuan/shiguang_warehouse.git" \
+            "$RESOURCE_DIR"
+          git -C "$RESOURCE_DIR" sparse-checkout set resources
+          cp -R "$RESOURCE_DIR/resources" app/src/main/assets/offline_repo/schools/
+          find app/src/main/assets/offline_repo/schools/resources -name adapters.yaml -delete
+          rm -rf "$RESOURCE_DIR"
+
+      - name: Generate contributor assets
+        run: |
+          chmod +x .github/scripts/build_contributors.sh
+          .github/scripts/build_contributors.sh
+
+      - name: Build developer debug APKs
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDevDebug --no-daemon --stacktrace
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiguangschedule-ui-test-apks
+          path: app/build/outputs/apk/dev/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7

@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.PlatformTextStyle
@@ -166,7 +167,19 @@ fun DayHeader(
     subTextColor: Color,
     strokeWidthPx: Float
 ) {
-    BoxWithConstraints(Modifier.fillMaxWidth().height(style.dayHeaderHeight)) {
+    BoxWithConstraints(
+        Modifier
+            .fillMaxWidth()
+            .height(style.dayHeaderHeight)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.68f),
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.28f)
+                    )
+                )
+            )
+    ) {
         val shouldShowDate = !style.hideDateUnderDay && maxHeight >= 42.dp
 
         Row(Modifier.fillMaxSize()) {
@@ -176,8 +189,18 @@ fun DayHeader(
                     .fillMaxHeight()
                     .drawBehind {
                         if (!style.hideGridLines) {
-                            drawLine(lineColor, Offset(size.width, 0f), Offset(size.width, size.height), strokeWidthPx)
-                            drawLine(lineColor, Offset(0f, size.height), Offset(size.width, size.height), strokeWidthPx)
+                            drawLine(
+                                lineColor,
+                                Offset(size.width, 0f),
+                                Offset(size.width, size.height),
+                                strokeWidthPx
+                            )
+                            drawLine(
+                                lineColor,
+                                Offset(0f, size.height),
+                                Offset(size.width, size.height),
+                                strokeWidthPx
+                            )
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -188,26 +211,28 @@ fun DayHeader(
                 ) {
                     Text(
                         text = currentYear,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = subTextColor,
-                        style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                        style = TextStyle(
+                            platformStyle = PlatformTextStyle(includeFontPadding = false)
+                        )
                     )
 
                     if (!currentWeek.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(1.dp))
                         Text(
                             text = currentWeek,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = subTextColor,
-                            style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = TextStyle(
+                                platformStyle = PlatformTextStyle(includeFontPadding = false)
+                            )
                         )
                     }
                 }
             }
-
-            val displayDaysCount = displayDays.size
 
             Row(
                 modifier = Modifier
@@ -215,48 +240,69 @@ fun DayHeader(
                     .fillMaxHeight()
                     .drawBehind {
                         if (!style.hideGridLines) {
-                            val cellWidth = size.width / displayDaysCount
-                            for (i in 1..displayDaysCount) {
-                                val x = i * cellWidth
-                                drawLine(lineColor, Offset(x, 0f), Offset(x, size.height), strokeWidth = strokeWidthPx)
-                            }
-                            drawLine(lineColor, Offset(0f, size.height), Offset(size.width, size.height), strokeWidthPx)
+                            drawLine(
+                                lineColor,
+                                Offset(0f, size.height),
+                                Offset(size.width, size.height),
+                                strokeWidthPx
+                            )
                         }
                     }
             ) {
                 displayDays.forEachIndexed { index, day ->
-                    Box(
+                    val isToday = index == todayIndex
+                    val dateLabel = dates.getOrNull(index)
+                        ?.substringAfter("-")
+                        .orEmpty()
+
+                    Column(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .background(if (index == todayIndex) MaterialTheme.colorScheme.primaryContainer.copy(0.4f) else Color.Transparent),
-                        contentAlignment = Alignment.Center
+                            .padding(vertical = 2.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(vertical = 1.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = day,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = textColor,
-                                maxLines = 1,
-                                style = TextStyle(
-                                    platformStyle = PlatformTextStyle(includeFontPadding = false),
-                                    lineHeight = 16.sp
-                                )
+                        Text(
+                            text = day,
+                            fontSize = 11.sp,
+                            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isToday) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                subTextColor
+                            },
+                            maxLines = 1,
+                            style = TextStyle(
+                                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                                lineHeight = 13.sp
                             )
+                        )
 
-                            if (shouldShowDate && dates.size > index) {
-                                Spacer(modifier = Modifier.height(2.dp))
+                        if (shouldShowDate && dateLabel.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(1.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(
+                                        color = if (isToday) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            Color.Transparent
+                                        },
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Text(
-                                    text = dates[index],
-                                    fontSize = 10.sp,
-                                    color = subTextColor,
+                                    text = dateLabel,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (isToday) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        textColor
+                                    },
                                     maxLines = 1,
                                     style = TextStyle(
                                         platformStyle = PlatformTextStyle(includeFontPadding = false),

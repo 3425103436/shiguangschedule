@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.xingheyuzhuan.shiguangschedule.R
 import com.xingheyuzhuan.shiguangschedule.data.db.main.TimeSlot
 import com.xingheyuzhuan.shiguangschedule.data.model.DualColor
+import com.xingheyuzhuan.shiguangschedule.ui.components.liquidGlass
 
 /**
  * 课程方案卡片
@@ -42,14 +43,22 @@ fun CourseSchemeCard(
     onToggleCustomTime: (Boolean) -> Unit,
     showRemoveButton: Boolean
 ) {
+    val cardShape = RoundedCornerShape(20.dp)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
+            .padding(vertical = 8.dp)
+            .liquidGlass(
+                tint = MaterialTheme.colorScheme.primary,
+                shape = cardShape,
+                shadowElevation = 3.dp
+            ),
+        shape = cardShape,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
 

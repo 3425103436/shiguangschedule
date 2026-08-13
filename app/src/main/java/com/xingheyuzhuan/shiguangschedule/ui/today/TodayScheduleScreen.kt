@@ -1,6 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.ui.today
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,12 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +41,7 @@ import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.R
 import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
 import com.xingheyuzhuan.shiguangschedule.ui.components.BottomNavigationBar
+import com.xingheyuzhuan.shiguangschedule.ui.components.liquidGlass
 import com.xingheyuzhuan.shiguangschedule.ui.theme.LocalIsDarkTheme
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -58,34 +61,39 @@ fun TodayScheduleScreen(
     val isDark = LocalIsDarkTheme.current
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.title_today_schedule),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.title_today_schedule),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.32f),
+                        scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.56f)
                     )
-                },
-                colors = TopAppBarDefaults.topAppBarColors()
-            )
-        },
-        bottomBar = {
-            BottomNavigationBar(
-                currentDestination = Destination.TodaySchedule,
-                onTabSelected = { dest -> onNavigate(dest) }
-            )
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            when (val state = uiState) {
-                is TodayUiState.Loading -> { /* 可放置圆圈加载 */ }
-                is TodayUiState.Success -> {
-                    TodayContent(state, gridStyle, isDark)
+                )
+            },
+            bottomBar = {
+                BottomNavigationBar(
+                    currentDestination = Destination.TodaySchedule,
+                    onTabSelected = { dest -> onNavigate(dest) },
+                    isTransparent = true
+                )
+            }
+        ) { innerPadding ->
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                when (val state = uiState) {
+                    is TodayUiState.Loading -> { /* 可放置圆圈加载 */ }
+                    is TodayUiState.Success -> {
+                        TodayContent(state, gridStyle, isDark)
+                    }
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -149,12 +157,33 @@ fun TodayContent(
             TodayStatus.Normal -> stringResource(R.string.title_current_week, state.weekIndex.toString())
         }
 
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            Text(text = dateStr, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Text(text = subTitle, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp)
+                .liquidGlass(
+                    tint = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(22.dp),
+                    shadowElevation = 4.dp
+                )
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
+                Text(
+                    text = dateStr,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subTitle,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         if (state.courses.isEmpty()) {
             EmptyStateView()
@@ -162,7 +191,7 @@ fun TodayContent(
             LazyColumn(
                 state = scrollState,
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 itemsIndexed(state.courses) { _, model ->
                     CourseTimelineItem(model, gridStyle, isDark)
@@ -188,10 +217,21 @@ fun CourseTimelineItem(
         } catch (e: Exception) { false }
     }
 
+    val isOngoing = remember(model.startTime, model.endTime, currentTime) {
+        try {
+            val start = LocalTime.parse(model.startTime ?: "00:00")
+            val end = LocalTime.parse(model.endTime ?: "00:00")
+            !currentTime.isBefore(start) && currentTime.isBefore(end)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     val colorPair = gridStyle.courseColorMaps.getOrElse(model.course.colorInt) {
         ScheduleGridStyle.DEFAULT_COLOR_MAPS[0]
     }
     val themeColor = if (isDark) colorPair.dark else colorPair.light
+    val cardShape = RoundedCornerShape(18.dp)
 
     Row(
         modifier = Modifier
@@ -218,19 +258,45 @@ fun CourseTimelineItem(
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .padding(top = 10.dp)
+                .size(if (isOngoing) 10.dp else 7.dp)
+                .background(
+                    color = if (isOngoing) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
+                    },
+                    shape = CircleShape
+                )
+        )
+        Spacer(modifier = Modifier.width(10.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = themeColor
-                ),
-                shape = MaterialTheme.shapes.medium,
-                elevation = if (isFinished) CardDefaults.cardElevation(defaultElevation = 0.dp)
-                else CardDefaults.cardElevation(defaultElevation = 2.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .liquidGlass(
+                        tint = themeColor,
+                        shape = cardShape,
+                        emphasized = isOngoing,
+                        shadowElevation = if (isOngoing) 8.dp else 3.dp
+                    )
+                    .then(
+                        if (isOngoing) {
+                            Modifier.border(
+                                width = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = cardShape
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
                     Text(
                         text = model.course.name,
                         style = MaterialTheme.typography.titleMedium.copy(

@@ -13,13 +13,16 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
@@ -29,6 +32,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.xingheyuzhuan.shiguangschedule.data.model.StartScreen
+import com.xingheyuzhuan.shiguangschedule.ui.components.LiquidGlassBackdrop
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.WeeklyScheduleScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list.AdapterSelectionScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list.SchoolSelectionListScreen
@@ -70,16 +74,20 @@ class MainActivity : AppCompatActivity() {
 
             if (state.isReady) {
                 ShiguangScheduleTheme(settings = state.appSettings) {
-                    val startDest = remember(state.appSettings.startScreen) {
-                        when (state.appSettings.startScreen) {
-                            StartScreen.COURSE_SCHEDULE -> Destination.CourseSchedule
-                            StartScreen.TODAY_SCHEDULE -> Destination.TodaySchedule
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LiquidGlassBackdrop(modifier = Modifier.fillMaxSize())
+
+                        val startDest = remember(state.appSettings.startScreen) {
+                            when (state.appSettings.startScreen) {
+                                StartScreen.COURSE_SCHEDULE -> Destination.CourseSchedule
+                                StartScreen.TODAY_SCHEDULE -> Destination.TodaySchedule
+                            }
                         }
+                        AppNavigation(startDestination = startDest)
                     }
-                    AppNavigation(startDestination = startDest)
                 }
             }else {
-                Surface(modifier = Modifier.fillMaxSize()) {}
+                Box(modifier = Modifier.fillMaxSize())
             }
         }
     }
@@ -156,7 +164,11 @@ fun AppNavigation(startDestination: Destination) {
                 put(ShiguangNavMetadata.IsMainScreenKey, destination.isMainScreen)
             }
         ) {
-            Surface(modifier = Modifier.fillMaxSize()) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onBackground
+            ) {
                 ScreenContent(
                     targetDest = destination,
                     onNavigate = onNavigate,

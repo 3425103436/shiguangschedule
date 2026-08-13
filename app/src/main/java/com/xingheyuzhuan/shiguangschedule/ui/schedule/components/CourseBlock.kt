@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -13,9 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -33,6 +32,7 @@ import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseWithWeeks
 import com.xingheyuzhuan.shiguangschedule.data.db.main.TimeSlot
 import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.BorderTypeProto
 import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.ScheduleModeProto
+import com.xingheyuzhuan.shiguangschedule.ui.components.liquidGlass
 import com.xingheyuzhuan.shiguangschedule.ui.theme.LocalIsDarkTheme
 
 @Composable
@@ -90,7 +90,7 @@ fun CourseBlock(
     }
 
     // 边框样式配置
-    val borderColor = if (isFloating) Color(0xFF2196F3) else MaterialTheme.colorScheme.outline
+    val borderColor = if (isFloating) Color(0xFF6475E8) else MaterialTheme.colorScheme.outline
     val borderWidth = if (isFloating) 2.dp else 1.dp
     val borderAlpha = if (isFloating) 1.0f else style.courseBlockAlpha
     val shape = RoundedCornerShape(style.courseBlockCornerRadius)
@@ -119,21 +119,44 @@ fun CourseBlock(
     val verticalArrangement = if (style.textAlignCenterVertical) Arrangement.Center else Arrangement.Top
     val textAlign = if (style.textAlignCenterHorizontal) TextAlign.Center else TextAlign.Start
 
-    // 选中捏起时，增加三维物理阴影
-    val floatingShadowModifier = if (isFloating) {
-        Modifier.shadow(elevation = 8.dp, shape = shape, clip = false)
-    } else {
-        Modifier
-    }
-
     Box(
         modifier = modifier
-            .then(floatingShadowModifier)
             .fillMaxSize()
+            .liquidGlass(
+                tint = blockColor,
+                shape = shape,
+                emphasized = isFloating,
+                shadowElevation = if (isFloating) 9.dp else 2.dp
+            )
             .then(borderModifier)
-            .clip(shape)
-            .background(color = blockColor)
     ) {
+        // Keep demoted courses visually quiet without washing out their content.
+        // The previous overlay was drawn after the text and hid most of the card.
+        if (isVisualDemoted && !isFloating) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = (if (isDarkTheme) Color.Black else Color.White)
+                            .copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+                    )
+                    .drawBehind {
+                        val stripeWidth = 5.dp.toPx()
+                        val stripeColor = (if (isDarkTheme) Color.White else Color.Black).copy(alpha = 0.035f)
+                        val brush = Brush.linearGradient(
+                            0.0f to stripeColor,
+                            0.45f to stripeColor,
+                            0.55f to Color.Transparent,
+                            1.0f to Color.Transparent,
+                            start = Offset(0f, 0f),
+                            end = Offset(stripeWidth, stripeWidth),
+                            tileMode = TileMode.Repeated
+                        )
+                        drawRect(brush = brush)
+                    }
+            )
+        }
+
         // 课程文字内容容器
         Column(
             modifier = Modifier.fillMaxSize().padding(style.courseBlockInnerPadding),
@@ -158,14 +181,24 @@ fun CourseBlock(
                 color = textColor,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = textAlign,
-                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 2,
+                modifier = Modifier.fillMaxWidth(),
                 style = TextStyle(lineHeight = 1.2.em)
             )
 
             if (!style.hideTeacher) {
                 val teacher = course.teacher
                 if (teacher.isNotBlank()) {
-                    Text(text = teacher, fontSize = s10, color = textColor, textAlign = textAlign, overflow = TextOverflow.Ellipsis, style = TextStyle(lineHeight = 1.em))
+                    Text(
+                        text = teacher,
+                        fontSize = s10,
+                        color = textColor,
+                        textAlign = textAlign,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        modifier = Modifier.fillMaxWidth(),
+                        style = TextStyle(lineHeight = 1.em)
+                    )
                 }
             }
 
@@ -173,28 +206,18 @@ fun CourseBlock(
                 val position = course.position
                 if (position.isNotBlank()) {
                     val prefix = if (style.removeLocationAt) "" else "@"
-                    Text(text = "$prefix$position", fontSize = s10, color = textColor, textAlign = textAlign, overflow = TextOverflow.Ellipsis, style = TextStyle(lineHeight = 1.em))
+                    Text(
+                        text = "$prefix$position",
+                        fontSize = s10,
+                        color = textColor,
+                        textAlign = textAlign,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        modifier = Modifier.fillMaxWidth(),
+                        style = TextStyle(lineHeight = 1.em)
+                    )
                 }
             }
-        }
-
-        // 当单课不是当前周时，进行干净的全局遮罩染色与虚化斜线绘制
-        if (isVisualDemoted && !isFloating) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = (if (isDarkTheme) Color.Black else Color.White).copy(alpha = 0.618f))
-                    .drawBehind {
-                        val stripeWidth = 5.dp.toPx()
-                        val stripeColor = (if (isDarkTheme) Color.White else Color.Black).copy(alpha = 0.06f)
-                        val brush = Brush.linearGradient(
-                            0.0f to stripeColor, 0.45f to stripeColor,
-                            0.55f to Color.Transparent, 1.0f to Color.Transparent,
-                            start = Offset(0f, 0f), end = Offset(stripeWidth, stripeWidth), tileMode = TileMode.Repeated
-                        )
-                        drawRect(brush = brush)
-                    }
-            )
         }
     }
 }

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.shiguangschedule" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowBackground">?android:attr/colorBackground</item>
+        <item name="android:windowBackground">@drawable/app_window_background</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:windowAnimationStyle">@style/Animation.App.Activity</item>
     </style>
 

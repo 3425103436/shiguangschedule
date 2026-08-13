@@ -1,22 +1,24 @@
 package com.xingheyuzhuan.shiguangschedule.ui.schedule
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -56,6 +60,7 @@ import com.xingheyuzhuan.shiguangschedule.navigation.AddEditCourseChannel
 import com.xingheyuzhuan.shiguangschedule.navigation.PresetCourseData
 import com.xingheyuzhuan.shiguangschedule.ui.components.BottomNavigationBar
 import com.xingheyuzhuan.shiguangschedule.ui.components.CourseTablePickerDialog
+import com.xingheyuzhuan.shiguangschedule.ui.components.LiquidGlassBackdrop
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.components.CourseDetailBottomSheet
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.components.FloatingCourseBar
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.components.ScheduleGrid
@@ -147,7 +152,10 @@ fun WeeklyScheduleScreen(
 
 
     val customTextColor = composedStyle.pageTextColor ?: MaterialTheme.colorScheme.onSurface
-    val customSubTextColor = customTextColor.copy(alpha = 0.7f)
+    val customSubTextColor = customTextColor.copy(alpha = 0.58f)
+    val pageDateLabel = remember(uiState.pagerMondayDate) {
+        uiState.pagerMondayDate.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
+    }
 
     val displayTitle = when {
         !uiState.isSemesterSet || uiState.semesterStartDate == null -> {
@@ -182,10 +190,10 @@ fun WeeklyScheduleScreen(
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             containerColor = Color.Transparent,
             topBar = {
-                CenterAlignedTopAppBar(
+                TopAppBar(
                     title = {
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
+                            horizontalAlignment = Alignment.Start,
                             modifier = Modifier
                                 .clickable {
                                     if (!uiState.isSemesterSet || uiState.semesterStartDate == null) {
@@ -194,25 +202,42 @@ fun WeeklyScheduleScreen(
                                         showWeekSelector = true
                                     }
                                 }
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = 2.dp)
                         ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = displayTitle,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = customTextColor
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = customSubTextColor
+                                )
+                            }
                             Text(
-                                text = displayTitle,
-                                style = MaterialTheme.typography.titleLarge,
-                                color = customTextColor
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .offset(y = (-4).dp),
-                                tint = customSubTextColor
+                                text = pageDateLabel,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = customSubTextColor
                             )
                         }
                     },
                     actions = {
-                        IconButton(onClick = { showTableSwitcher = true }) {
+                        IconButton(
+                            onClick = { showTableSwitcher = true },
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.48f))
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.White.copy(alpha = 0.58f),
+                                    shape = CircleShape
+                                )
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.SwapHoriz,
                                 contentDescription = stringResource(R.string.action_select_table),
@@ -221,8 +246,8 @@ fun WeeklyScheduleScreen(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.Transparent,
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.32f),
+                        scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.56f),
                     ),
                     scrollBehavior = scrollBehavior
                 )
@@ -244,15 +269,12 @@ fun WeeklyScheduleScreen(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { innerPadding ->
 
-            val dynamicBottomPadding = remember(innerPadding, collapseFraction, floatingCourse) {
-                if (floatingCourse != null) {
-                    0.dp
-                } else {
-                    val systemWindowInsetBottom = innerPadding.calculateBottomPadding() - 80.dp
-                    val safeSystemBottom = systemWindowInsetBottom.coerceAtLeast(0.dp)
-                    val expandableHeight = innerPadding.calculateBottomPadding() - safeSystemBottom
-                    safeSystemBottom + (expandableHeight * (1f - collapseFraction))
-                }
+            // Scaffold already accounts for the real navigation bar and gesture inset.
+            // The previous 80.dp estimate let the grid scroll underneath the nav pill.
+            val contentBottomPadding = if (floatingCourse == null) {
+                innerPadding.calculateBottomPadding()
+            } else {
+                96.dp
             }
 
             HorizontalPager(
@@ -262,7 +284,7 @@ fun WeeklyScheduleScreen(
                         start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
                         top = innerPadding.calculateTopPadding(),
                         end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                        bottom = dynamicBottomPadding
+                        bottom = contentBottomPadding
                     )
                     .fillMaxSize(),
                 beyondViewportPageCount = 1,
