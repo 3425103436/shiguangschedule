@@ -175,9 +175,7 @@ fun WeeklyScheduleScreen(
     val collapseFraction = scrollBehavior.state.collapsedFraction
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (composedStyle.backgroundImagePath.isEmpty()) {
-            LiquidGlassBackdrop(modifier = Modifier.fillMaxSize())
-        } else {
+        if (composedStyle.backgroundImagePath.isNotEmpty()) {
             AsyncImage(
                 model = composedStyle.backgroundImagePath,
                 contentDescription = null,
@@ -271,15 +269,12 @@ fun WeeklyScheduleScreen(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { innerPadding ->
 
-            val dynamicBottomPadding = remember(innerPadding, collapseFraction, floatingCourse) {
-                if (floatingCourse != null) {
-                    0.dp
-                } else {
-                    val systemWindowInsetBottom = innerPadding.calculateBottomPadding() - 80.dp
-                    val safeSystemBottom = systemWindowInsetBottom.coerceAtLeast(0.dp)
-                    val expandableHeight = innerPadding.calculateBottomPadding() - safeSystemBottom
-                    safeSystemBottom + (expandableHeight * (1f - collapseFraction))
-                }
+            // Scaffold already accounts for the real navigation bar and gesture inset.
+            // The previous 80.dp estimate let the grid scroll underneath the nav pill.
+            val contentBottomPadding = if (floatingCourse == null) {
+                innerPadding.calculateBottomPadding()
+            } else {
+                96.dp
             }
 
             HorizontalPager(
@@ -289,7 +284,7 @@ fun WeeklyScheduleScreen(
                         start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
                         top = innerPadding.calculateTopPadding(),
                         end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                        bottom = dynamicBottomPadding
+                        bottom = contentBottomPadding
                     )
                     .fillMaxSize(),
                 beyondViewportPageCount = 1,

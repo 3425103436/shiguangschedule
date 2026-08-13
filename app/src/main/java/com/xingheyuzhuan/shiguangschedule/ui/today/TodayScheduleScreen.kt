@@ -41,7 +41,6 @@ import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.R
 import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
 import com.xingheyuzhuan.shiguangschedule.ui.components.BottomNavigationBar
-import com.xingheyuzhuan.shiguangschedule.ui.components.LiquidGlassBackdrop
 import com.xingheyuzhuan.shiguangschedule.ui.components.liquidGlass
 import com.xingheyuzhuan.shiguangschedule.ui.theme.LocalIsDarkTheme
 import java.time.LocalTime
@@ -61,10 +60,7 @@ fun TodayScheduleScreen(
     val gridStyle by viewModel.gridStyle.collectAsState()
     val isDark = LocalIsDarkTheme.current
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LiquidGlassBackdrop(modifier = Modifier.fillMaxSize())
-
-        Scaffold(
+    Scaffold(
             containerColor = androidx.compose.ui.graphics.Color.Transparent,
             topBar = {
                 CenterAlignedTopAppBar(
@@ -98,7 +94,6 @@ fun TodayScheduleScreen(
                 }
             }
         }
-    }
 }
 
 @Composable

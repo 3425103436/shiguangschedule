@@ -31,14 +31,14 @@ fun Modifier.liquidGlass(
     shadowElevation: androidx.compose.ui.unit.Dp = if (emphasized) 8.dp else 3.dp
 ): Modifier {
     val isDark = LocalIsDarkTheme.current
-    val topColor = if (isDark) Color.White.copy(alpha = 0.16f) else Color.White.copy(alpha = 0.76f)
+    val topColor = if (isDark) Color.White.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.56f)
     val middleColor = if (isDark) {
         MaterialTheme.colorScheme.surface.copy(alpha = 0.32f)
     } else {
-        Color.White.copy(alpha = 0.42f)
+        Color.White.copy(alpha = 0.30f)
     }
     val tintColor = tint.copy(alpha = (if (isDark) 0.15f else 0.075f) * tint.alpha)
-    val edgeColor = Color.White.copy(alpha = if (isDark) 0.22f else 0.78f)
+    val edgeColor = Color.White.copy(alpha = if (isDark) 0.20f else 0.48f)
 
     return this
         .shadow(elevation = shadowElevation, shape = shape, clip = false)
@@ -50,7 +50,7 @@ fun Modifier.liquidGlass(
         .drawWithContent {
             drawContent()
             drawLine(
-                color = Color.White.copy(alpha = if (isDark) 0.20f else 0.82f),
+                color = Color.White.copy(alpha = if (isDark) 0.18f else 0.50f),
                 start = Offset(size.width * 0.12f, 1.dp.toPx()),
                 end = Offset(size.width * 0.88f, 1.dp.toPx()),
                 strokeWidth = 1.dp.toPx()
